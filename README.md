@@ -33,7 +33,4 @@ Programs compile to native machine code via LLVM. No runtime. No GC.
 
 ## Licence
 
-This specification is licensed under
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-You may implement toke, write about it, or incorporate it into proposals
-without restriction, subject to attribution.
+MIT. See [LICENSE](LICENSE).
