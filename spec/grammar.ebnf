@@ -1,0 +1,6 @@
+(* toke Phase 1 Formal Grammar — EBNF *)
+(* Status: STUB — to be completed as part of Story 1.1.4 *)
+(* This file is normative per toke-spec. Do not edit without a spec amendment. *)
+
+(* Placeholder — formal grammar to be defined in Story 1.1.4 *)
+(* See docs/language-proposal-v03.md and spec/toke-spec-v02.md for design intent *)
