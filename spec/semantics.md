@@ -30,8 +30,32 @@ A conforming implementation SHALL support the following primitive types:
 | `Str`  | Immutable UTF-8 string       | `""`       |
 | `void` | Unit type (no value)         | n/a        |
 
-The type keywords `i64`, `u64`, `f64`, `bool`, `str`, and `void` are predefined
+> **Note:** `void` is an implementation-defined type used by the compiler for
+> functions with no return value and for statement-form expressions. It is not
+> listed in the main spec's primitive type table (Section 13.1) and should be
+> considered an internal compiler type rather than a user-facing primitive.
+
+The type keywords `i64`, `u64`, `f64`, `bool`, `Str`, and `void` are predefined
 identifiers (Section 4.3) and are always in scope.
+
+### 1.1a Additional Primitive Types (spec-defined, not yet implemented)
+
+The main spec (Section 13.1) defines additional primitive types that are not yet
+implemented in the reference compiler:
+
+| Type   | Description                  | Status              |
+|--------|------------------------------|---------------------|
+| `Byte` | Single byte (u8 alias)       | Spec-defined        |
+| `i8`   | Signed 8-bit integer         | Not yet implemented |
+| `i16`  | Signed 16-bit integer        | Not yet implemented |
+| `i32`  | Signed 32-bit integer        | Not yet implemented |
+| `u8`   | Unsigned 8-bit integer       | Not yet implemented |
+| `u16`  | Unsigned 16-bit integer      | Not yet implemented |
+| `u32`  | Unsigned 32-bit integer      | Not yet implemented |
+| `f32`  | IEEE 754 single-precision    | Not yet implemented |
+
+A conforming Profile 1 implementation need only support the types in Section 1.1.
+The full type table will be required in a future profile.
 
 ### 1.2 Composite Types
 
@@ -109,10 +133,10 @@ This section defines how the type of each expression form is determined.
 
 The type of an identifier is determined by its declaration:
 
-1. If the identifier refers to a `let` or `mut` binding with a type annotation,
-   the type is the annotated type.
-2. If the identifier refers to a `let` or `mut` binding without a type
-   annotation, the type is inferred from the initializer expression.
+1. If the identifier refers to a `let` binding (immutable or `let x=mut.expr`
+   mutable) with a type annotation, the type is the annotated type.
+2. If the identifier refers to a `let` binding without a type annotation,
+   the type is inferred from the initializer expression.
 3. If the identifier refers to a function parameter, the type is the
    parameter's declared type.
 4. If the identifier refers to a function declaration, the type is `func`.
@@ -137,7 +161,7 @@ For a binary expression `lhs op rhs`:
 - The result type is the common operand type.
 - Violation: `[errors.md E4031]` with fix suggestion `"cast RHS to <T> using 'as'"`.
 
-**Comparison operators** (`<`, `>`, `==`):
+**Comparison operators** (`<`, `>`, `=`):
 - Both operands must have equal types.
 - The result type is `bool`.
 - Violation: `[errors.md E4031]`.
@@ -179,12 +203,13 @@ For a field access `expr.field`:
 
 ### 2.8 Binding Statements
 
-For `let x : T = expr` or `mut x : T = expr`:
+For `let x = expr;` (immutable) or `let x=mut.expr;` (mutable):
 
 - If both a type annotation `T` and an initializer `expr` are present, the
   annotation type and the initializer type must be equal. Violation:
   `[errors.md E4031]`.
 - The binding itself has type `void` (it is a statement, not an expression).
+- The `mut.` qualifier marks the binding as mutable; see `[grammar.ebnf MutBindStmt]`.
 
 ### 2.9 Assignment Statements
 
@@ -192,8 +217,8 @@ For `x = expr`:
 
 - The left-hand side type and right-hand side type must be equal.
   Violation: `[errors.md E4031]`.
-- The binding must have been declared with `mut`. STUB: mutability checking
-  is not yet formalized in the type checker.
+- The binding must have been declared with `let x=mut.` (mutable binding).
+  STUB: mutability checking is not yet formalized in the type checker.
 
 ### 2.10 Return Statements
 
@@ -255,7 +280,7 @@ to innermost, is:
 2. **Function scope** -- contains the function's parameters. Created when
    entering a `F=` declaration body.
 3. **Block scope** -- created for each `{ ... }` statement list, `lp()` loop,
-   and `match` arm. Nested blocks create nested scopes.
+   and match arm (`|{...}`). Nested blocks create nested scopes.
 
 Lookup proceeds from the innermost scope outward. The first matching declaration
 is returned.
@@ -266,19 +291,25 @@ is returned.
 |-------------------|-------------------------|---------|------------------------------|
 | `DECL_FUNC`       | `F=name(...)`           | no      | Forward-declared in pass 1   |
 | `DECL_TYPE`       | `T=Name{...}`           | no      | Forward-declared in pass 1   |
-| `DECL_CONST`      | `C=name ...`            | no      | Forward-declared in pass 1   |
+| `DECL_CONST`      | `name = literal : Type;`| no      | Forward-declared in pass 1   |
 | `DECL_PARAM`      | Function parameter      | no      | Bound in function scope      |
 | `DECL_LET`        | `let x = ...`           | no      | Bound in enclosing block     |
-| `DECL_MUT`        | `mut x = ...`           | yes     | Bound in enclosing block     |
+| `DECL_MUT`        | `let x=mut.expr`        | yes     | Bound in enclosing block     |
 | `DECL_PREDEFINED` | Built-in                | no      | Always in module scope       |
 | `DECL_IMPORT_ALIAS` | `I=alias:path`        | no      | Resolved import alias        |
+
+> **Constant syntax discrepancy:** The spec grammar `[grammar.ebnf ConstDecl]`
+> defines constant declarations as `IDENT = LiteralExpr : TypeExpr ;` (e.g.,
+> `PI = 3.14159 : f64;`). The reference compiler currently uses a `C=` sigil
+> prefix (`C=PI 3.14159:f64;`). This document follows the spec grammar form;
+> compiler output may differ until the compiler is updated.
 
 ### 4.3 Predefined Identifiers
 
 The following identifiers are seeded into the module scope before any
 user-declared names:
 
-    true   false   bool   i64   u64   f64   str   void   spawn   await   Task
+    true   false   bool   i64   u64   f64   Str   void   spawn   await   Task
 
 These cannot be shadowed by module-level declarations (since they occupy the
 same scope), but they CAN be shadowed by function parameters or local bindings
@@ -286,7 +317,7 @@ in inner scopes.
 
 ### 4.4 Forward Declaration
 
-All module-scope declarations (`F=`, `T=`, `C=`) are registered in a first
+All module-scope declarations (`F=`, `T=`, constants) are registered in a first
 pass before any references are resolved. This means:
 - Functions may call other functions declared later in the file.
 - Types may reference other types declared later in the file.
@@ -316,7 +347,7 @@ field list.
 
 A `lp(init; cond; step) { body }` loop creates a single scope that encloses
 the init variable, condition, step, and body. The init variable (if declared
-with `let` or `mut`) is visible in all three subsequent positions.
+with `let` or `let x=mut.`) is visible in all three subsequent positions.
 
 ### 4.8 Match Arm Scoping
 
@@ -348,9 +379,9 @@ error union type. Its semantics are:
 
 ### 5.3 Match on Error Types
 
-STUB: Matching on error union variants (e.g., `match result { Ok(v) => ...,
-Err(e) => ... }`) is planned but not yet formalized. The current type checker
-validates match exhaustiveness only for `bool` scrutinees.
+STUB: Matching on error union variants (e.g., `result|{ Ok:v expr; Err:e expr }`)
+is planned but not yet formalized. The current type checker validates match
+exhaustiveness only for `bool` scrutinees.
 
 ---
 
@@ -425,6 +456,11 @@ Violation: `[errors.md E2001]`.
 `spawn` and `await` are predefined identifiers, not keywords. They can
 theoretically be shadowed (Section 4.5), though doing so is not recommended.
 
+> **Note:** `spawn`, `await`, and `Task` are Phase 2 additions to the language.
+> They do not yet appear in the main spec's reserved identifier list (Section 14).
+> Their semantics are defined here based on the reference compiler implementation
+> and are subject to change when formally incorporated into the main spec.
+
 ### 7.2 FFI: Extern Functions
 
 An extern function is a function declaration without a body:
@@ -460,13 +496,16 @@ of arena lifetime rules requires the memory model specification.
 
 ### 8.1 Typing
 
-A `match` expression has a scrutinee expression and one or more arms:
+A match expression has a scrutinee expression and one or more arms, written
+in spec-canonical postfix-pipe form `[grammar.ebnf MatchExpr]`:
 ```
-match scrutinee {
-    pattern1 => body1;
-    pattern2 => body2;
+scrutinee|{
+    Variant1:binding1 body1;
+    Variant2:binding2 body2
 }
 ```
+
+Note: `match` is NOT a keyword. The match operator is the postfix `|{...}` form.
 
 **Type rules:**
 1. The scrutinee is inferred to some type `S`.

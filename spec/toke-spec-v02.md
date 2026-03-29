@@ -206,7 +206,7 @@ Additional terms:
 | construct | a syntactic unit recognised by the grammar |
 | token | a single atomic lexical unit produced by the lexer |
 | tk token | an LLM vocabulary token in the tokenizer sense (distinguished from lexical token by context) |
-| Phase 1 | the 80-character variant of the language, used with existing LLM tokenizers |
+| Phase 1 | the 81-character variant of the language, used with existing LLM tokenizers |
 | Phase 2 | the 56-character variant, used with the purpose-built toke tokenizer |
 | tkc | the reference compiler binary |
 | arena | a lexically scoped memory region whose allocations are freed on scope exit |
@@ -215,11 +215,11 @@ Additional terms:
 
 ---
 
-## 7. Character Set — Phase 1 (80 Characters) [N]
+## 7. Character Set — Phase 1 (81 Characters) [N]
 
 Version 0.1 normatively defines Phase 1. Phase 2 is specified in Section 8 as a profile for use with the purpose-built tokenizer.
 
-Phase 1 uses exactly 80 characters. No character outside this set shall appear in toke source except within string literal content, where arbitrary UTF-8 is permitted.
+Phase 1 uses exactly 81 characters. No character outside this set shall appear in toke source except within string literal content, where arbitrary UTF-8 is permitted.
 
 ### 7.1 Complete Phase 1 Character Table
 
@@ -234,7 +234,7 @@ Symbols      ( ) { } [ ] = : . ; + - * / < > ! | "                      19
 TOTAL                                                                     81
 ```
 
-Note: The target is 80 usable structural characters. The double-quote `"` is counted in the symbol set as the string literal delimiter. The exact final symbol allocation is resolved at M0 (spec lock). This section is authoritative once M0 is declared.
+Note: The total is 81 characters. The double-quote `"` is counted in the symbol set as the string literal delimiter. This section is authoritative once M0 is declared.
 
 ### 7.2 Excluded Characters
 
@@ -264,7 +264,7 @@ No other escape sequences are defined. An unrecognised escape sequence is a comp
 
 ---
 
-## 8. Character Set — Phase 2 (56 Characters) [N]
+## 8. Character Set — Phase 2 (57 Characters) [N]
 
 Phase 2 is a reduced character set profile for use with the purpose-built toke tokenizer. It is a strict subset of Phase 1 except for two new sigil characters (`$` and `@`).
 
@@ -321,7 +321,7 @@ The lexer produces tokens of the following classes:
 | Class | Description | Examples |
 |-------|-------------|---------|
 | KEYWORD | Reserved identifier | `F` `T` `I` `M` `if` `el` `lp` `br` `let` `mut` `as` `rt` |
-| IDENT | User-defined identifier | `get_user` `HttpReq` `count` |
+| IDENT | User-defined identifier | `getuser` `HttpReq` `count` |
 | TYPE_IDENT | Uppercase-initial identifier (Phase 1 only) | `User` `HttpError` `Str` |
 | INT_LIT | Integer literal | `0` `42` `1024` `0xFF` |
 | FLOAT_LIT | Floating-point literal | `3.14` `0.5` `1.0e9` |
@@ -362,7 +362,7 @@ When multiple token classes could match at the current position, the following p
 
 An identifier:
 - begins with a letter (a–z, A–Z in Phase 1; a–z only in Phase 2)
-- continues with letters, digits (0–9), or underscore (`_`)
+- continues with letters or digits (0–9)
 - is case-sensitive
 - must not be a reserved keyword
 
@@ -626,7 +626,7 @@ T=TypeName{field1:Type1;field2:Type2};
 A type declaration defines either a **struct type** or a **sum type** (tagged union). The distinction is lexical:
 - Struct: all field names are lowercase identifiers
 - Sum type: all field names begin with uppercase (TYPE_IDENT)
-- Mixing is a compile error (E2010)
+- Mixing is a compile error (E2011)
 
 **Struct example:**
 ```
@@ -664,15 +664,15 @@ A function with `!ErrorType` is partial: all error-propagation operations within
 **Example — total function:**
 ```
 F=add(a:i64;b:i64):i64{
-  <a+b
+  <a+b;
 };
 ```
 
 **Example — partial function:**
 ```
-F=get_user(id:u64):User!UserErr{
+F=getuser(id:u64):User!UserErr{
   r=db.one("SELECT id,name FROM users WHERE id=?",[id])!UserErr.DbErr;
-  <User{id:r.u64(id);name:r.str(name)}
+  <User{id:r.u64(id);name:r.str(name)};
 };
 ```
 
@@ -786,7 +786,7 @@ The match expression is an expression, not a statement. Its result type is the c
 
 **Example:**
 ```
-get_user(id)|{
+getuser(id)|{
   Ok:u   <Res.ok(json.enc(u));
   Err:e  <Res.err(json.enc(e))
 }
@@ -806,7 +806,7 @@ The right-hand side of `!` must be a variant constructor of the current function
 ```
 F=handle(req:http.Req):http.Res!ApiErr{
   body=json.dec(req.body)!ApiErr.BadRequest;
-  user=db.get_user(body.id)!ApiErr.DbError;
+  user=db.getuser(body.id)!ApiErr.DbError;
   <http.Res.ok(json.enc(user))
 };
 ```
@@ -868,7 +868,7 @@ All partial functions return `Result<T, E>` implicitly, expressed in the signatu
 No implicit type coercions are defined. Specifically prohibited:
 
 - numeric widening (e.g. `i32` → `i64` automatically) — use `as`
-- string conversion (integer to string, etc.) — use stdlib `str.from_int` etc.
+- string conversion (integer to string, etc.) — use stdlib `str.fromint` etc.
 - truthiness conversion (integer or pointer to bool) — use explicit comparison
 
 The `as` keyword performs explicit type cast:
@@ -936,8 +936,8 @@ When propagation is not appropriate, errors are matched explicitly:
 
 ```
 result|{
-  Ok:v  handle_success(v);
-  Err:e handle_error(e)
+  Ok:v  handlesuccess(v);
+  Err:e handleerror(e)
 }
 ```
 
@@ -1058,17 +1058,17 @@ The standard library modules are part of the toke specification. Their signature
 F=str.len(s:Str):u64
 F=str.concat(a:Str;b:Str):Str
 F=str.slice(s:Str;start:u64;end:u64):Str!str.SliceErr
-F=str.from_int(n:i64):Str
-F=str.from_float(n:f64):Str
-F=str.to_int(s:Str):i64!str.ParseErr
-F=str.to_float(s:Str):f64!str.ParseErr
+F=str.fromint(n:i64):Str
+F=str.fromfloat(n:f64):Str
+F=str.toint(s:Str):i64!str.ParseErr
+F=str.tofloat(s:Str):f64!str.ParseErr
 F=str.contains(s:Str;sub:Str):bool
 F=str.split(s:Str;sep:Str):[Str]
 F=str.trim(s:Str):Str
 F=str.upper(s:Str):Str
 F=str.lower(s:Str):Str
 F=str.bytes(s:Str):[Byte]
-F=str.from_bytes(b:[Byte]):Str!str.EncodingErr
+F=str.frombytes(b:[Byte]):Str!str.EncodingErr
 ```
 
 ### 17.2 std.http
@@ -1281,7 +1281,7 @@ The `fix` field shall be populated whenever the correction is deterministic. Exa
   "span_start": 242,
   "span_end": 258,
   "context": [
-    "10: F=get_user(id:u64):User!UserErr{",
+    "10: F=getuser(id:u64):User!UserErr{",
     "11:   r=db.one(sql;[id])!UserErr.DbErr;",
     "12:   <User{id:r.str(id);name:r.str(name)}",
     "13: };"
@@ -1712,7 +1712,8 @@ Error codes are stable across patch versions. All codes beginning with `E` are e
 | E2007 | Unexpected token — expected production does not match |
 | E2008 | Missing closing delimiter |
 | E2009 | Empty function body |
-| E2010 | Mixed struct and sum fields in type declaration |
+| E2010 | Pointer type `*T` used outside extern function |
+| E2011 | Mixed struct and sum fields in type declaration |
 | E2015 | Recursive struct without indirection |
 | E2020 | Circular static initialisation |
 | E2030 | Unresolved import — module not found |
