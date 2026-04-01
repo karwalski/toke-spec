@@ -1,0 +1,374 @@
+# toke: Research Review Request
+
+**Author:** Matt Watt (karwalski)
+**Date:** April 2026
+**Status:** Pre-Gate 1 — Requesting Feedback
+**Repository:** [github.com/karwalski/toke](https://github.com/karwalski/toke)
+
+---
+
+## Purpose of This Document
+
+This document invites research review and feedback on **toke**, a compiled programming language designed as a code generation target for large language models. The project is approaching its first evaluation gate and we are seeking input from researchers and practitioners in:
+
+- Programming language design
+- LLM code generation and evaluation
+- Compiler construction
+- Tokenizer design and BPE methodology
+- AI training data curation
+
+We are requesting review of the language design, syntax decisions, evaluation methodology, and preliminary results **before locking the specification**. Feedback at this stage can influence the final language design.
+
+---
+
+## 1. The Problem
+
+LLMs generate code token by token. Every token costs compute, time, and money. Current programming languages (Python, C, Java, TypeScript) were designed for human authors and carry structural overhead that inflates token counts:
+
+- Verbose keywords (`function`, `return`, `import` — multi-token each)
+- Optional and ambiguous syntax (semicolons, parentheses, whitespace significance)
+- Multiple valid forms for equivalent constructs
+- Ambiguous grammars requiring backtracking parsers
+- Human-readable error messages that models must parse as natural language
+
+## 2. The Thesis
+
+> A sufficiently constrained, unambiguous, token-efficient language will reduce end-to-end LLM code generation cost — measured as (tokens x iterations x error rate) — by a material margin sufficient to justify building and training a purpose-native model.
+
+This is treated as an empirical hypothesis with explicit go/no-go gates.
+
+## 3. Language Overview
+
+### 3.1 Character Set
+
+toke uses **56 ASCII characters**: 26 lowercase letters, 10 digits, and 20 symbols. No uppercase letters appear in source code.
+
+```
+a-z    0-9
+( ) { } ; : . , " * / + - < > = ! | $ @
+```
+
+Two characters (`^`, `~`) are reserved for v0.2 features.
+
+### 3.2 Keywords (12 total)
+
+| Keyword | Meaning | Replaces |
+|---------|---------|----------|
+| `m` | Module declaration | `module`, `package` |
+| `f` | Function declaration | `func`, `def`, `fn` |
+| `t` | Type declaration | `type`, `struct`, `enum` |
+| `i` | Import | `import`, `use`, `require` |
+| `c` | Constant | `const`, `final` |
+| `if` | Conditional | `if` |
+| `el` | Else branch | `else`, `elif` |
+| `lp` | Loop | `for`, `while`, `loop` |
+| `br` | Break | `break` |
+| `let` | Binding | `let`, `var` |
+| `mut` | Mutable binding | `var`, `mut` |
+| `as` | Type cast | `as` |
+
+The return statement uses `<` (one character vs six for `return`).
+
+### 3.3 Grammar
+
+LL(1) — deterministic parsing with exactly one token of lookahead. No backtracking, no ambiguity. Every syntactic position has exactly one valid interpretation.
+
+Full EBNF: [toke-spec/spec/grammar.ebnf](https://github.com/karwalski/toke-spec/blob/main/spec/grammar.ebnf)
+
+### 3.4 Type System
+
+Statically typed. Explicit type annotations on all function signatures. Six primitive types:
+
+| Type | Width | Description |
+|------|-------|-------------|
+| `i64` | 64-bit | Signed integer |
+| `u64` | 64-bit | Unsigned integer |
+| `f64` | 64-bit | IEEE 754 double |
+| `bool` | 1 byte | Boolean |
+| `$str` | pointer | Immutable UTF-8 string |
+| `void` | 0 bytes | Unit type |
+
+Composite types use sigil prefixes:
+- `$typename` — user-defined struct or sum type
+- `@T` — array of T
+- `$(K:V)` — map from K to V
+- `T!$err` — error union (result or error)
+
+### 3.5 Example Program
+
+```
+m=api;
+i=http:std.http;
+i=json:std.json;
+
+t=$apierr{
+  $notfound:u64;
+  $badrequest:$str
+};
+
+f=handle(req:http.$req):http.$res!$apierr{
+  let id=json.dec(req.body)!$apierr;
+  let users=$($str:i64)("alice":1;"bob":2);
+  <http.$res.ok(json.enc(users));
+};
+```
+
+### 3.6 Structured Diagnostics
+
+The compiler emits JSON diagnostics with stable error codes, machine-parseable source locations, and mechanically derivable fix suggestions. 70+ error codes across 7 compilation stages. No prose error messages — every diagnostic is structured for automated repair loops.
+
+```json
+{
+  "code": "E2003",
+  "severity": "error",
+  "stage": "parse",
+  "message": "expected ';' after statement",
+  "span": {"file": "main.tk", "line": 4, "col": 12, "len": 1},
+  "fix": "insert ';' at position 4:12"
+}
+```
+
+---
+
+## 4. What Has Been Built
+
+| Component | Status | Repository |
+|-----------|--------|------------|
+| Language specification (v0.1) | Complete | [toke-spec](https://github.com/karwalski/toke-spec) |
+| Reference compiler (C99, LLVM backend) | Complete | [tkc](https://github.com/karwalski/tkc) |
+| Standard library (11 modules) | Complete | [toke-stdlib](https://github.com/karwalski/toke-stdlib) |
+| Training corpus | Complete | [toke-corpus](https://github.com/karwalski/toke-corpus) |
+| BPE tokenizer | In progress | [toke-tokenizer](https://github.com/karwalski/toke-tokenizer) |
+| Fine-tuned model (Qwen 2.5 Coder 7B) | In progress | [toke-models](https://github.com/karwalski/toke-models) |
+| Benchmark harness (500 held-out tasks) | Complete | [toke-benchmark](https://github.com/karwalski/toke-benchmark) |
+
+### 4.1 Compiler
+
+Single-pass C99 compiler: lexer, LL(1) parser, name resolution, type inference, LLVM IR codegen (x86-64, ARM64). `--check` mode for corpus validation. 600+ conformance tests.
+
+### 4.2 Training Corpus
+
+46,754 validated, deduplicated, compiler-checked programs across four stages:
+
+| Stage | Count | Description |
+|-------|-------|-------------|
+| A — Single-function | 26,978 | Core algorithms (array, string, math, conditional, error) |
+| B — Composition | 9,776 | Multi-function programs combining Stage A functions |
+| C — Edge cases | 5,000 | Boundary conditions, error propagation, recovery patterns |
+| D — Applications | 5,000 | Multi-function application-level programs |
+
+**Generation methodology:** Multi-model pipeline (Claude Haiku 4.5, GPT-4.1-mini, Grok-3-mini). Each program independently validated by the compiler and cross-checked via differential testing against reference implementations in Python, C, and Java (majority agreement required).
+
+**Pass@1 rate during generation:** 62% (Stage A), with auto-fixer rescuing ~15% of failures at zero API cost.
+
+### 4.3 Standard Library
+
+11 modules with C runtime backing:
+
+`std.str`, `std.file`, `std.http`, `std.db`, `std.json`, `std.crypto`, `std.env`, `std.process`, `std.log`, `std.time`, `std.test`
+
+---
+
+## 5. Preliminary Results
+
+### 5.1 Tokenizer Evaluation
+
+BPE tokenizer trained on the Phase 1 corpus (46,730 programs). Evaluated on 4,675 held-out programs.
+
+| Metric | 8K Vocabulary | 32K Vocabulary |
+|--------|--------------|----------------|
+| Token reduction vs cl100k_base | **12.5%** | **13.1%** |
+| Mean tokens (toke BPE) | 172.9 | 171.8 |
+| Mean tokens (cl100k baseline) | 197.6 | 197.6 |
+| Compression ratio | 0.875 | 0.869 |
+| Vocabulary utilisation | 70.2% | 23.5% |
+| Fertility | 0.377 | 0.374 |
+
+> **Note:** These results are from the Phase 1 (80-character) corpus with the initial tokenizer. The Phase 2 (56-character) corpus transformation is complete and tokenizer retraining is in progress (22% complete). Final results will be inserted here before circulation.
+
+### 5.2 Token Efficiency vs Other Languages
+
+Measured on equivalent programs using cl100k_base tokenizer:
+
+| Language | Mean tokens (function only) | Mean tokens (complete program) |
+|----------|-----------------------------|-------------------------------|
+| toke (cl100k) | ~38 | ~52 |
+| Python | ~85 | ~156 |
+| C | ~60 | ~168 |
+| Java | ~43 | ~127 |
+
+With the purpose-built tokenizer, toke's complete program drops to ~19 tokens for equivalent logic (projected, based on 8K vocabulary evaluation).
+
+### 5.3 Gate 1 Criteria and Status
+
+| Criterion | Threshold | Status |
+|-----------|-----------|--------|
+| Token reduction vs Python/C/Java (cl100k) | > 10% | **Met (12.5%)** |
+| Pass@1 on 500 held-out tasks | >= 60% | **Pending** (awaiting model training) |
+
+<!-- PLACEHOLDER: Insert final tokenizer results after Phase 2 retraining completes -->
+<!-- PLACEHOLDER: Insert Pass@1 results after model evaluation -->
+<!-- PLACEHOLDER: Insert token reduction with Phase 2 tokenizer -->
+
+---
+
+## 6. Design Decisions Requesting Feedback
+
+We specifically invite critique and alternative perspectives on the following decisions:
+
+### 6.1 Character Set Reduction (80 → 56 characters)
+
+Removing uppercase letters eliminates case-based type/value distinction (common in Go, Haskell, Rust). Instead, toke uses `$` sigils for type names (`$user`, `$str`). This reduces the character set but increases average identifier length by 1 character.
+
+**Question:** Is the sigil approach the right trade-off? Are there better ways to distinguish types from values in a case-insensitive language?
+
+### 6.2 Single Loop Construct
+
+toke has one loop: `lp(init;cond;step){body}`. No `for-each`, `while`, `do-while`, or iterator protocol. All looping patterns are expressed through `lp`.
+
+**Question:** Does the absence of iteration abstractions measurably increase token counts for collection-heavy programs? Should a `for-each` equivalent be added?
+
+### 6.3 No Comments in Source
+
+toke source has no comment syntax. Metadata lives outside the source file. The rationale: comments are invisible to the compiler and consume tokens that carry no semantic value.
+
+**Question:** Does the absence of comments affect LLM generation quality? Do models use self-generated comments as a reasoning scaffold?
+
+### 6.4 Error Union vs Exception Model
+
+toke uses error unions (`T!$err`) with explicit propagation (`!$err`) rather than try/catch exceptions. This makes error handling visible in type signatures and forces explicit handling at every call site.
+
+**Question:** Does explicit error propagation increase or decrease LLM generation accuracy compared to exception-based models?
+
+### 6.5 Arena Memory Model
+
+toke uses arena allocation with lexical scoping. No garbage collector, no reference counting, no manual malloc/free. All allocations are tied to arena lifetimes.
+
+**Question:** Is the arena model sufficient for the target use cases, or will common patterns require escape hatches?
+
+### 6.6 Semicolons as Universal Terminators
+
+Every statement, declaration, and field ends with `;`. No optional semicolons, no ASI (automatic semicolon insertion). This adds tokens but eliminates an entire class of ambiguity.
+
+**Question:** Given that semicolons are single-character tokens in most BPE vocabularies, is the consistency worth the token overhead?
+
+### 6.7 12 Keywords vs Readability
+
+toke's keyword set is deliberately minimal: `m`, `f`, `t`, `i`, `if`, `el`, `lp`, `br`, `let`, `mut`, `as`. Single-character declaration keywords prioritise token efficiency over human readability.
+
+**Question:** Does extreme keyword compression help or hurt LLM generation accuracy? Would slightly longer keywords (e.g., `fn` instead of `f`, `mod` instead of `m`) improve model performance enough to justify the extra tokens?
+
+### 6.8 Purpose-Built Tokenizer Strategy
+
+toke trains a custom BPE tokenizer on its own corpus rather than using general-purpose tokenizers (cl100k, Llama tokenizer). This creates a dependency: the model must be fine-tuned with the custom tokenizer, so toke cannot be generated by off-the-shelf models.
+
+**Question:** Is the purpose-built tokenizer dependency acceptable? What is the minimum token reduction that justifies it?
+
+---
+
+## 7. Evaluation Methodology Review
+
+### 7.1 Benchmark Design
+
+500 held-out Phase A tasks (algorithmic, data-to-code). Each task has:
+- Natural language description
+- Typed input/output specification
+- 20–120 test cases with expected outputs
+
+Evaluation: Generate toke code, compile with `tkc`, run against test cases. Pass@1 = fraction of tasks where all test cases pass on first generation attempt.
+
+**Question:** Is 500 tasks sufficient for statistical significance? Should we stratify by difficulty or category?
+
+### 7.2 Differential Testing
+
+Every corpus entry is validated by generating equivalent programs in Python, C, and Java, then checking output agreement across languages. Majority agreement (2/3 languages) required.
+
+**Question:** Is majority agreement sufficient, or should we require unanimity? How should we handle floating-point precision differences?
+
+### 7.3 Token Counting Methodology
+
+Token efficiency is measured using OpenAI's cl100k_base tokenizer as baseline. toke programs are compared against equivalent Python/C/Java programs.
+
+**Question:** Is cl100k_base the right baseline? Should we also measure against Llama/Mistral tokenizers for broader applicability?
+
+---
+
+## 8. Open Questions from the Specification
+
+These questions from the RFC (Section 23) remain unresolved:
+
+1. **Generics:** Should toke v0.2 add parametric polymorphism? What syntax minimises token overhead?
+2. **Async model:** Spawn/await vs structured concurrency — which is more LLM-friendly?
+3. **C FFI:** How much interop surface is needed? Minimal extern declarations or full ABI compatibility?
+4. **Module versioning:** Should version constraints appear in source (`i=http:std.http@1.2`) or in a manifest file?
+5. **Standard library scope:** 11 modules is ambitious for v0.1. Should we reduce to a core set and defer the rest?
+
+---
+
+## 9. Project Timeline
+
+| Milestone | Status | Key Result |
+|-----------|--------|------------|
+| 1.1 Language specification | Complete | LL(1) grammar, 56-char set, 12 keywords |
+| 1.2 Reference compiler | Complete | Single-pass C99, LLVM backend, 600+ tests |
+| 1.3 Standard library | Complete | 11 modules, C runtime backing |
+| 1.5 Training corpus | Complete | 46,754 validated programs |
+| 1.6 Gate 1 evaluation | In progress | Token reduction met (12.5%). Pass@1 pending. |
+| 2.2 Purpose-built tokenizer | In progress (22%) | 8K/32K vocab trained. Phase 2 retrain in progress. |
+| 2.3 Fine-tuned model | In progress | QLoRA on Qwen 2.5 Coder 7B. Training data prepared. |
+
+<!-- PLACEHOLDER: Update milestone statuses with final Gate 1 results -->
+
+---
+
+## 10. How to Review
+
+### Source Material
+
+| Document | Location |
+|----------|----------|
+| RFC draft | [toke-spec/rfc/draft-karwalski-toke-lang-00.md](https://github.com/karwalski/toke-spec/blob/main/rfc/draft-karwalski-toke-lang-00.md) |
+| Language specification v0.1 | [toke-spec/spec/toke-spec-v02.md](https://github.com/karwalski/toke-spec/blob/main/spec/toke-spec-v02.md) |
+| Formal grammar (EBNF) | [toke-spec/spec/grammar.ebnf](https://github.com/karwalski/toke-spec/blob/main/spec/grammar.ebnf) |
+| Error code registry | [toke-spec/spec/errors.md](https://github.com/karwalski/toke-spec/blob/main/spec/errors.md) |
+| Type system semantics | [toke-spec/spec/semantics.md](https://github.com/karwalski/toke-spec/blob/main/spec/semantics.md) |
+| Architecture decisions | [toke-spec/docs/architecture/ADR-0001.md](https://github.com/karwalski/toke-spec/blob/main/docs/architecture/ADR-0001.md) |
+| Benchmark methodology | [toke-benchmark/docs/benchmark-design.md](https://github.com/karwalski/toke-benchmark/blob/main/docs/benchmark-design.md) |
+| Website | [tokelang.dev](https://tokelang.dev) |
+
+### What We Want
+
+1. **Language design critique** — Are the syntax decisions well-justified? What would you change?
+2. **Evaluation methodology review** — Is the benchmark design sound? Are the gate criteria appropriate?
+3. **Tokenizer strategy feedback** — Is a purpose-built tokenizer the right approach?
+4. **Corpus methodology assessment** — Is differential testing + majority agreement sufficient for training data quality?
+5. **Use case assessment** — Beyond the stated use case (LLM code generation), do you see other applications or limitations?
+
+### How to Provide Feedback
+
+- Open issues on [github.com/karwalski/toke-spec](https://github.com/karwalski/toke-spec/issues)
+- Comment on the RFC draft via pull request
+- Email: <!-- PLACEHOLDER: Add contact email -->
+
+---
+
+## Appendix A: Complete Grammar (Summary)
+
+```ebnf
+SourceFile  = ModuleDecl { ImportDecl } { TypeDecl } { ConstDecl } { FuncDecl } EOF ;
+ModuleDecl  = "m" , "=" , Ident , ";" ;
+ImportDecl  = "i" , "=" , Ident , ":" , QualPath , ";" ;
+TypeDecl    = "t" , "=" , SigilType , "{" , FieldList , "}" , ";" ;
+ConstDecl   = "c" , "=" , Ident , [ ":" , TypeExpr ] , Expr , ";" ;
+FuncDecl    = "f" , "=" , Ident , "(" , [ ParamList ] , ")" , [ ":" , TypeExpr ] , ( Block | ";" ) ;
+```
+
+## Appendix B: Tokenizer Comparison
+
+<!-- PLACEHOLDER: Insert final Phase 2 tokenizer results table -->
+<!-- PLACEHOLDER: Insert vocabulary analysis (top-50 merged tokens) -->
+<!-- PLACEHOLDER: Insert per-category token reduction breakdown -->
+
+## Appendix C: Sample Corpus Entries
+
+<!-- PLACEHOLDER: Insert 5-10 representative corpus entries showing Phase 2 syntax across categories -->
