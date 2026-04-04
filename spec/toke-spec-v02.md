@@ -438,7 +438,9 @@ Source files shall be encoded as UTF-8. A byte order mark (BOM) at the start of 
 
 ## 11. Grammar — Formal EBNF [N]
 
-The following EBNF defines the complete normative grammar for toke Phase 1. Terminals are shown in single quotes or as token class names in UPPERCASE. Nonterminals are shown in PascalCase. `?` means zero or one. `*` means zero or more. `+` means one or more. `|` is alternation. `()` is grouping.
+> **Note (2026-04-05 — syntax freeze):** The normative Profile 2 (default) grammar is defined in `spec/phase2-profile.md` Section 6. That document supersedes the grammar below for all new work. Implementers targeting the default profile MUST use `phase2-profile.md` Section 6 as their grammar reference. The Phase 1 (legacy) grammar below applies only when `--legacy` mode is active.
+
+The following EBNF defines the complete normative grammar for toke Profile 1 (legacy). Terminals are shown in single quotes or as token class names in UPPERCASE. Nonterminals are shown in PascalCase. `?` means zero or one. `*` means zero or more. `+` means one or more. `|` is alternation. `()` is grouping.
 
 ```ebnf
 (* Top-level structure *)
@@ -1877,22 +1879,24 @@ The following JSON Schema defines the normative diagnostic record format for ver
 
 ## Appendix D — Keyword and Symbol Reference [I]
 
+> **Note (2026-04-05 — syntax freeze):** Profile 2 (default) syntax is shown first. Profile 1 (legacy, `--legacy` flag) equivalents are in the Legacy column. See `spec/phase2-profile.md` Section 3 for the authoritative Phase 2 keyword table.
+
 ### Keywords
 
-| Keyword | Role | Notes |
-|---------|------|-------|
-| `F` | Function definition | Always uppercase |
-| `T` | Type definition | Always uppercase |
-| `I` | Import declaration | Always uppercase |
-| `M` | Module declaration | Always uppercase |
-| `if` | Conditional | Lowercase |
-| `el` | Else branch | Follows `}` of `if` only |
-| `lp` | Loop | The single loop construct |
-| `br` | Break | Exits innermost `lp` |
-| `let` | Binding | `let x=v` immutable; `let x=mut.v` mutable |
-| `mut` | Mutable qualifier | Used as `mut.value` in binding only |
-| `as` | Type cast | `expr as TargetType` |
-| `rt` | Return (long form) | Equivalent to `<` |
+| Keyword (Profile 2 / default) | Legacy (Profile 1) | Role | Notes |
+|-------------------------------|-------------------|------|-------|
+| `m` | `M` | Module declaration | Lowercase in Profile 2 |
+| `f` | `F` | Function definition | Lowercase in Profile 2 |
+| `i` | `I` | Import declaration | Lowercase in Profile 2 |
+| `t` | `T` | Type definition | Lowercase in Profile 2 |
+| `if` | `if` | Conditional | Unchanged |
+| `el` | `el` | Else branch | Follows `}` of `if` only |
+| `lp` | `lp` | Loop | The single loop construct |
+| `br` | `br` | Break | Exits innermost `lp` |
+| `let` | `let` | Binding | `let x=v` immutable; `let x=mut.v` mutable |
+| `mut` | `mut` | Mutable qualifier | Used as `mut.value` in binding only |
+| `as` | `as` | Type cast | `expr as $targettype` |
+| `rt` | `rt` | Return (long form) | Equivalent to `<` |
 
 ### Operators
 
@@ -1932,17 +1936,27 @@ The following JSON Schema defines the normative diagnostic record format for ver
 
 ## Appendix E — Reserved Identifiers [N]
 
+> **Note (2026-04-05 — syntax freeze):** Profile 2 (default) forms are listed. Profile 1 (legacy) uppercase forms (`F`, `T`, `I`, `M`, `Str`, `Byte`, `Ok`, `Err`) are also reserved in `--legacy` mode. See `spec/phase2-profile.md` Section 9 for the complete Profile 2 reserved identifier list.
+
 The following identifiers are reserved and may not be used as user-defined names:
 
-**Keywords (Section 12.1):** `F` `T` `I` `M` `if` `el` `lp` `br` `let` `mut` `as` `rt`
+**Keywords (Profile 2 / default):** `m` `f` `i` `t` `if` `el` `lp` `br` `let` `mut` `as` `rt`
+
+**Keywords (Profile 1 / `--legacy` mode):** `M` `F` `I` `T` (same roles, uppercase)
 
 **Predefined values:** `true` `false`
 
-**Built-in types (scalar):** `u8` `u16` `u32` `u64` `i8` `i16` `i32` `i64` `f32` `f64` `bool` `Str` `Byte`
+**Built-in types (scalar):** `u8` `u16` `u32` `u64` `i8` `i16` `i32` `i64` `f32` `f64` `bool` `void`
 
-**Built-in type constructors:** `Ok` `Err` (variants of the built-in Result type)
+**Built-in types (sigiled, Profile 2):** `$str` `$byte`
 
-**Special identifiers:** `arena` (used as block introducer), `len` (array length member — not reusable as a field name in user types)
+**Built-in types (unsigiled, Profile 1 legacy):** `Str` `Byte`
+
+**Built-in type constructors (Profile 2):** `$ok` `$err` (variants of the built-in Result type)
+
+**Built-in type constructors (Profile 1 legacy):** `Ok` `Err`
+
+**Special identifiers:** `arena` (block introducer), `len` (array length member), `get` (array variable-index method)
 
 **Standard library module aliases:** `std` (reserved as a top-level module path prefix; user modules may not use `std.x` paths)
 

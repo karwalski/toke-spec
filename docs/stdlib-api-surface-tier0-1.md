@@ -223,9 +223,9 @@ JWT signing/verification, API key validation, and bearer token extraction.
 m=std.auth;
 
 t=$jwtalg{
-  Hs256:bool;
-  Hs384:bool;
-  Rs256:bool
+  Hs256:void;
+  Hs384:void;
+  Rs256:void
 };
 
 t=$jwtclaims{
@@ -258,14 +258,14 @@ f=auth.bearerextract(req:$req):str!$autherr;
 i=auth:std.auth;
 i=str:std.str;
 
-let token=auth.jwtsign($jwtclaims{sub:"user42";iss:"myapp";exp:1720000000;iat:1719900000;extra:@()};str.bytes(secret);$jwtalg{Hs256:true})!$apperr.Auth;
+let token=auth.jwtsign($jwtclaims{sub:"user42";iss:"myapp";exp:1720000000;iat:1719900000;extra:@()};str.bytes(secret);$jwtalg{Hs256:void})!$apperr.Auth;
 let claims=auth.jwtverify(token;str.bytes(secret))!$apperr.Auth;
 let bearer=auth.bearerextract(req)!$apperr.Auth;
 ```
 
 #### Sum types
 
-- `$jwtalg` -- sum type: `Hs256`, `Hs384`, `Rs256` (algorithm selection; payload is `bool` for zero-payload variants)
+- `$jwtalg` -- sum type: `Hs256`, `Hs384`, `Rs256` (algorithm selection; `void` payload for zero-payload enum-style variants)
 - `$autherr` -- sum type: `Expired`, `BadSignature`, `Malformed`, `InvalidKey`, `Missing`
 
 ---

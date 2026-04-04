@@ -1,8 +1,8 @@
 # toke Phase 2 — Normative Profile Specification
 
-**Status:** Normative (Story 10.3.2)
-**Date:** 2026-04-04
-**Spec version:** 0.2-draft
+**Status:** FROZEN — Syntax lock-in 2026-04-05 (v0.2-syntax-lock). No syntax changes without formal amendment.
+**Date:** 2026-04-05
+**Spec version:** 0.2
 **Supersedes:** toke-spec-v02.md Section 8 (which described Phase 2 as a secondary profile)
 
 ---
@@ -100,7 +100,7 @@ Scalar numeric and boolean types do NOT take the `$` prefix because they are alr
 | `u8`, `u16`, `u32`, `u64` | unchanged | Unsigned integers |
 | `f32`, `f64` | unchanged | Floating-point |
 | `bool` | unchanged | Boolean |
-| `void` | unchanged | Unit type (internal) |
+| `void` | unchanged | Unit type; valid as a sum-type variant payload for zero-payload (enum-style) variants |
 
 ### 4.3 Type Identifier Lexical Rule
 
@@ -343,6 +343,7 @@ ScalarType   = 'u8'  | 'u16' | 'u32' | 'u64'
              | 'i8'  | 'i16' | 'i32' | 'i64'
              | 'f32' | 'f64'
              | 'bool'
+             | 'void'                                      (* unit type; valid as sum-type variant payload *)
              | '$str'                                      (* P2: was 'Str' *)
              | '$byte'                                     (* P2: was 'Byte' *)
              ;
