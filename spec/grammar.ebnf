@@ -1,5 +1,7 @@
 (* toke Phase 1 Formal Grammar — EBNF *)
 (* Normative per toke-spec-v02.md Section 11. *)
+(* Phase 1 is the legacy compatibility profile. *)
+(* For the normative Phase 2 grammar, see spec/phase2-profile.md Section 6. *)
 (* Matches the reference compiler (tkc/src/parser.c) as of 2026-03-29. *)
 (*                                                                        *)
 (* Notation:                                                              *)

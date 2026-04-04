@@ -308,7 +308,7 @@ Token efficiency is measured using OpenAI's cl100k_base tokenizer as baseline. t
 
 ## 8. Open Questions from the Specification
 
-These questions from the RFC (Section 23) remain unresolved:
+These questions from the specification (Section 23) remain unresolved:
 
 1. **Generics:** Should toke v0.2 add parametric polymorphism? What syntax minimises token overhead?
 2. **Async model:** Spawn/await vs structured concurrency — which is more LLM-friendly?
@@ -339,7 +339,7 @@ These questions from the RFC (Section 23) remain unresolved:
 
 | Document | Location |
 |----------|----------|
-| RFC draft | [toke-spec/rfc/draft-karwalski-toke-lang-00.md](https://github.com/karwalski/toke-spec/blob/main/rfc/draft-karwalski-toke-lang-00.md) |
+| Toke Specification (original draft) | [toke-spec/rfc/draft-karwalski-toke-lang-00.md](https://github.com/karwalski/toke-spec/blob/main/rfc/draft-karwalski-toke-lang-00.md) |
 | Language specification v0.1 | [toke-spec/spec/toke-spec-v02.md](https://github.com/karwalski/toke-spec/blob/main/spec/toke-spec-v02.md) |
 | Formal grammar (EBNF) | [toke-spec/spec/grammar.ebnf](https://github.com/karwalski/toke-spec/blob/main/spec/grammar.ebnf) |
 | Error code registry | [toke-spec/spec/errors.md](https://github.com/karwalski/toke-spec/blob/main/spec/errors.md) |
@@ -360,7 +360,7 @@ These questions from the RFC (Section 23) remain unresolved:
 ### How to Provide Feedback
 
 - Open issues on [github.com/karwalski/toke-spec](https://github.com/karwalski/toke-spec/issues)
-- Comment on the RFC draft via pull request
+- Comment on the specification draft via pull request
 - Email: toke@karwalski.dev
 
 ---

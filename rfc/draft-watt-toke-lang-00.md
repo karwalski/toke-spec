@@ -1,8 +1,7 @@
 ```
-Independent Submission                                       M. Karwalski
-Request for Comments: draft-karwalski-toke-lang-00          tokelang.dev
+Toke Language Specification                                    Matt Watt
+Document: draft-watt-toke-lang-00                            tokelang.dev
 Category: Informational                                       March 2026
-ISSN: pending
 
 
           toke: A Machine-Native Programming Language for
@@ -39,17 +38,16 @@ Abstract
 
 Status of This Memo
 
-   This document is an independent submission to the RFC series.  It
-   represents the views of its author and does not constitute an IETF
-   standard.  It is published for informational purposes and as a basis
-   for community review and implementation.
+   This document is the Toke Language Specification.  It represents
+   the views of its author and does not constitute an IETF standard.
+   It is published for informational purposes and as a basis for
+   community review and implementation.
 
-   This document is not a candidate for any level of Internet Standard.
    Distribution of this document is unlimited.
 
 Copyright Notice
 
-   Copyright (c) 2026 M. Karwalski.  All rights reserved.
+   Copyright (c) 2026 Matt Watt.  All rights reserved.
 
    This document is made available under the Creative Commons
    Attribution 4.0 International License (CC BY 4.0).
@@ -81,7 +79,8 @@ Table of Contents
    6.  Symbol Assignment ........................................... 10
    6.1.  Operator and Delimiter Table .............................. 11
    6.2.  Keywords .................................................. 11
-   7.  Language Constructs ......................................... 12
+   6.3.  Formal Grammar (EBNF) .................................... 12
+   7.  Language Constructs ......................................... 14
    7.1.  Module and Imports ........................................ 12
    7.2.  Type Definitions .......................................... 12
    7.3.  Function Definitions ...................................... 13
@@ -89,9 +88,10 @@ Table of Contents
    7.5.  Bindings and Assignment ................................... 14
    7.6.  Conditionals .............................................. 15
    7.7.  Loop ...................................................... 15
-   7.8.  Error Propagation ......................................... 16
-   7.9.  Arena Blocks .............................................. 16
-   7.10. Complete Example .......................................... 17
+   7.8.  Logical Operators ......................................... 16
+   7.9.  Error Propagation ......................................... 16
+   7.10. Arena Blocks .............................................. 17
+   7.11. Complete Example .......................................... 17
    8.  Memory Model ................................................ 18
    8.1.  Arena Allocation .......................................... 18
    8.2.  Static Lifetime ........................................... 18
@@ -419,7 +419,8 @@ Table of Contents
    -------------------------------------------------------------------
    Lowercase     a-z                                                   26
    Digits        0-9                                                   10
-   Symbols       ( ) { } = : . ; + - * / < > ! | " $ @ ^ ~           20
+   Symbols       ( ) { } = : . ; + - * / < > ! | $ @                 18
+   Reserved      ^ ~                                                  2
    -------------------------------------------------------------------
    TOTAL                                                               56
 ```
@@ -443,6 +444,11 @@ Table of Contents
    o  Excluded symbols: #, %, &, backtick, backslash, single-quote,
       comma, question-mark.
 
+   The double-quote character (") appears in source as the string
+   literal delimiter but is not a structural symbol.  It is consumed
+   by the lexer during string literal scanning and never produces a
+   token.  It is analogous to whitespace in this regard.
+
    The characters ^ and ~ are reserved and unassigned.  They MUST NOT
    be used in toke source.  They are held for future language extension
    without requiring a profile version change.
@@ -450,8 +456,10 @@ Table of Contents
    Encoding conventions:
 
    Type sigil ($):
-      All type names are prefixed with $ and written in lowercase.
-      Example: $user, $str, $err.  The $ character precedes a type
+      User-defined type names are prefixed with $ and written in
+      lowercase.  Example: $user, $point, $apierr.  Built-in
+      primitive types (i64, str, bool, f64, byte, etc.) are written
+      bare without the $ sigil.  The $ character precedes a type
       name in 100% of its occurrences, forming highly predictable
       co-occurrence patterns under BPE tokenization.
 
@@ -482,8 +490,7 @@ Table of Contents
    The development profile is NOT the normative toke language.
    Mechanical translation between the development profile and the
    production 56-character language is fully deterministic and
-   implemented in the reference compiler via --profile1 and --profile2
-   flags.
+   implemented in the reference compiler via the --legacy flag.
 
    The 80-character profile uses 26 lowercase + 26 uppercase + 10
    digits + 19 symbols = 81 structural characters.  It is documented
@@ -536,8 +543,6 @@ Table of Contents
    )       Call close / group close  (none)
    {       Block open                Struct literal open
    }       Block close               Struct literal close
-   [       (dev profile only)        (dev profile only)
-   ]       (dev profile only)        (dev profile only)
    +       Add                       String concatenation
    -       Subtract                  Unary negation
    *       Multiply                  Pointer deref (FFI only)
@@ -546,7 +551,6 @@ Table of Contents
    >       Greater-than comparison   (none)
    !       Error propagation         Logical not
    |       Match block open          Union type separator
-   "       String literal delimiter  (none)
 ```
 
    Sigil symbols:
@@ -560,18 +564,41 @@ Table of Contents
    ~       Reserved, unassigned
 ```
 
+   Multi-character operators:
+
+```
+   Sequence  Role
+   --------  ----------------------------------------
+   &&        Logical AND (short-circuit; both operands bool, result bool)
+   ||        Logical OR  (short-circuit; both operands bool, result bool)
+```
+
 ### 6.2.  Keywords
 
-   Twelve identifiers are reserved as keywords.  They MUST NOT be used
-   as user-defined identifiers.
+   Keywords are divided into two categories.
+
+   Context keywords (4):
 
 ```
    Keyword  Role
    -------  ------------------------------------------
+   m        Module declaration
    f        Function definition
    t        Type definition
    i        Import declaration
-   m        Module declaration
+```
+
+   Context keywords are NOT reserved words.  The lexer emits TK_IDENT
+   for m, f, t, and i; the parser recognises them as declaration
+   introducers only when they appear at the top level followed by =
+   (i.e., m=, f=, t=, i=).  Inside function bodies, these identifiers
+   MAY be used as variable names.
+
+   Reserved keywords (8):
+
+```
+   Keyword  Role
+   -------  ------------------------------------------
    if       Conditional branch
    el       Else branch (follows closing } of if only)
    lp       Loop (the single loop construct)
@@ -582,13 +609,127 @@ Table of Contents
    rt       Return (long form; equivalent to <)
 ```
 
-   All keywords are lowercase.  The declaration keywords f, t, i, and m
-   are single characters.  Boolean literals true and false are
+   Reserved keywords MUST NOT be used as user-defined identifiers.
+
+   All keywords are lowercase.  Boolean literals true and false are
    predefined identifiers, not keywords, and MUST NOT be redefined.
 
    NOTE: In the development profile (80-character), the declaration
    keywords are uppercase (F, T, I, M).  The production language uses
    lowercase throughout.
+
+### 6.3.  Formal Grammar (EBNF)
+
+   The following EBNF defines the normative grammar for toke.
+   Terminals are shown in single quotes or as token class names in
+   UPPERCASE.  Nonterminals are shown in PascalCase.  ? means zero
+   or one.  * means zero or more.  + means one or more.  | is
+   alternation.  () is grouping.
+
+```ebnf
+   (* Top-level structure *)
+   SourceFile      = ModuleDecl ImportDecl* TypeDecl* ConstDecl*
+                     FuncDecl* EOF ;
+
+   (* Module — 'm' is a context keyword, not a reserved word *)
+   ModuleDecl      = 'm' '=' ModulePath ';' ;
+   ModulePath      = IDENT ( '.' IDENT )* ;
+
+   (* Imports — 'i' is a context keyword *)
+   ImportDecl      = 'i' '=' IDENT ':' ModulePath ';' ;
+
+   (* Type declarations — 't' is a context keyword *)
+   TypeDecl        = 't' '=' '$' TypeName '{' FieldList '}' ';' ;
+   TypeName        = IDENT ;
+   FieldList       = Field ( ';' Field )* ;
+   Field           = IDENT ':' TypeExpr ;
+
+   (* Constant declarations *)
+   ConstDecl       = IDENT '=' LiteralExpr ':' TypeExpr ';' ;
+
+   (* Function declarations — 'f' is a context keyword *)
+   FuncDecl        = 'f' '=' IDENT '(' ParamList ')' ':'
+                     ReturnSpec '{' StmtList '}' ';' ;
+   ParamList       = Param ( ';' Param )* | (* empty *) ;
+   Param           = IDENT ':' TypeExpr ;
+   ReturnSpec      = TypeExpr ( '!' TypeExpr )? ;
+
+   (* Statements *)
+   StmtList        = Stmt* ;
+   Stmt            = BindStmt | MutBindStmt | AssignStmt
+                   | ReturnStmt | IfStmt | LoopStmt
+                   | BreakStmt | ExprStmt | ArenaStmt ;
+
+   BindStmt        = 'let' IDENT '=' Expr ';' ;
+   MutBindStmt     = 'let' IDENT '=' 'mut' '.' Expr ';' ;
+   AssignStmt      = IDENT '=' Expr ';' ;
+   ReturnStmt      = '<' Expr ';' | 'rt' Expr ';' ;
+   BreakStmt       = 'br' ';' ;
+
+   IfStmt          = 'if' '(' Expr ')' '{' StmtList '}'
+                     ( 'el' '{' StmtList '}' )? ;
+   LoopStmt        = 'lp' '(' Stmt Expr ';' Stmt ')'
+                     '{' StmtList '}' ;
+   ArenaStmt       = '{' 'arena' StmtList '}' ;
+
+   ExprStmt        = Expr ';' ;
+
+   (* Expressions — precedence low to high *)
+   Expr            = OrExpr ;
+   OrExpr          = AndExpr ( '||' AndExpr )* ;
+   AndExpr         = MatchExpr ( '&&' MatchExpr )* ;
+   MatchExpr       = CompareExpr ( '|' '{' MatchArmList '}' )? ;
+   CompareExpr     = AddExpr ( ( '<' | '>' | '=' ) AddExpr )? ;
+   AddExpr         = MulExpr ( ( '+' | '-' ) MulExpr )* ;
+   MulExpr         = UnaryExpr ( ( '*' | '/' ) UnaryExpr )* ;
+   UnaryExpr       = '-' UnaryExpr | '!' UnaryExpr
+                   | PropagateExpr ;
+   PropagateExpr   = CallExpr ( '!' TypeExpr )? ;
+   CallExpr        = PostfixExpr ( '(' ArgList ')' )* ;
+   PostfixExpr     = PrimaryExpr ( '.' IDENT )* ;
+   PrimaryExpr     = IDENT | LiteralExpr | '(' Expr ')'
+                   | StructLit | ArrayLit | MapLit ;
+
+   (* Match arms *)
+   MatchArmList    = MatchArm ( ';' MatchArm )* ;
+   MatchArm        = TypeExpr ':' IDENT Expr ;
+
+   (* Struct literal — $name{field:val; ...} *)
+   StructLit       = '$' IDENT '{' FieldInit ( ';' FieldInit )*
+                     '}' ;
+   FieldInit       = IDENT ':' Expr ;
+
+   (* Array literal — @(expr; expr; ...) *)
+   ArrayLit        = '@' '(' ( Expr ( ';' Expr )* )? ')' ;
+
+   (* Map literal — @(key:val; key:val; ...) *)
+   MapLit          = '@' '(' Expr ':' Expr
+                     ( ';' Expr ':' Expr )* ')' ;
+
+   (* Argument list *)
+   ArgList         = Expr ( ';' Expr )* | (* empty *) ;
+
+   (* Type expressions *)
+   TypeExpr        = ScalarType | '$' IDENT | ArrayTypeExpr
+                   | MapTypeExpr | FuncTypeExpr ;
+   ScalarType      = 'u8' | 'u16' | 'u32' | 'u64'
+                   | 'i8' | 'i16' | 'i32' | 'i64'
+                   | 'f32' | 'f64'
+                   | 'bool' | 'str' | 'byte' ;
+   ArrayTypeExpr   = '@' TypeExpr ;
+   MapTypeExpr     = '@' '(' TypeExpr ':' TypeExpr ')' ;
+   FuncTypeExpr    = '(' TypeExpr ( ';' TypeExpr )* ')' ':'
+                     TypeExpr ;
+
+   (* Literals *)
+   LiteralExpr     = INT_LIT | FLOAT_LIT | STR_LIT | BOOL_LIT ;
+```
+
+   The grammar is context-free, LL(1) (every production is
+   unambiguously determined by the next token), and unambiguous
+   (no input string has more than one parse tree).  Any
+   implementation requiring more than one token of lookahead is
+   non-conforming.
 
 ---
 
@@ -609,7 +750,7 @@ Table of Contents
    Import declaration syntax:
 
 ```
-   i=localAlias:module.path;
+   i=alias:module.path;
 ```
 
    The local alias is the name by which the imported module's exports
@@ -639,34 +780,59 @@ Table of Contents
    (tagged union).  The distinction is lexical:
 
    o  Struct: all field names are lowercase identifiers.
-   o  Sum type: all variant names begin with the $ sigil.
+   o  Sum type: all variant names begin with an uppercase letter.
    o  Mixing both conventions in one type is a compile error (E2010).
 
    Struct example:
 
 ```
-   t=$user{id:u64;name:$str;email:$str};
+   t=$user{id:u64;name:str;email:str};
 ```
 
    Sum type example:
 
 ```
-   t=$user_err{
-     $not_found:u64;
-     $bad_input:$str;
-     $db_err:$str
+   t=$usererr{
+     NotFound:u64;
+     BadInput:str;
+     DbErr:str
    };
 ```
 
    In a sum type, each variant name is a tag and its type is the
    payload carried by that variant.
 
+   Built-in primitive types:
+
+```
+   Type    Description                  Width
+   ------  ---------------------------  --------
+   i8      signed integer               8-bit
+   i16     signed integer               16-bit
+   i32     signed integer               32-bit
+   i64     signed integer               64-bit
+   u8      unsigned integer             8-bit
+   u16     unsigned integer             16-bit
+   u32     unsigned integer             32-bit
+   u64     unsigned integer             64-bit
+   f32     IEEE 754 binary32            32-bit
+   f64     IEEE 754 binary64            64-bit
+   bool    boolean                      1 logical bit
+   str     UTF-8 string                 heap-allocated
+   byte    single byte (alias for u8)   8-bit unsigned
+```
+
+   In type expressions, primitive types are written without the $
+   sigil: i64, str, bool.  User-defined types require the $ prefix:
+   $user, $mytype.  No implicit type coercions are defined; use the
+   as keyword for explicit type casts (e.g., narrow as i64).
+
 ### 7.3.  Function Definitions
 
    Syntax:
 
 ```
-   f=name(param1:$type1;param2:$type2):$return_type!$error_type{
+   f=name(param1:$type1;param2:$type2):$returntype!$errortype{
      body
    };
 ```
@@ -675,11 +841,11 @@ Table of Contents
    names, parameter types, return type, and the error type if the
    function is fallible.
 
-   A function without !$error_type is total: it MUST NOT contain error-
+   A function without !$errortype is total: it MUST NOT contain error-
    propagation operations (compile error E3001).
 
-   A function with !$error_type is partial: all error-propagation
-   operations in the body MUST be coercible to $error_type.
+   A function with !$errortype is partial: all error-propagation
+   operations in the body MUST be coercible to $errortype.
 
    Total function example:
 
@@ -692,9 +858,9 @@ Table of Contents
    Partial function example:
 
 ```
-   f=get_user(id:u64):$user!$user_err{
+   f=getuser(id:u64):$user!$usererr{
      r=db.one("SELECT id,name FROM users WHERE id=?";@(id))
-       !$user_err.$db_err;
+       !$usererr.DbErr;
      <$user{id:r.u64(id);name:r.str(name)}
    };
 ```
@@ -720,9 +886,9 @@ Table of Contents
    Example:
 
 ```
-   get_user(id)|{
-     $ok:u   <$res.ok(json.enc(u));
-     $err:e  <$res.err(json.enc(e))
+   getuser(id)|{
+     Ok:u   <$res.ok(json.enc(u));
+     Err:e  <$res.err(json.enc(e))
    }
 ```
 
@@ -810,7 +976,32 @@ Table of Contents
    };
 ```
 
-### 7.8.  Error Propagation
+### 7.8.  Logical Operators
+
+   toke provides two logical operators:
+
+```
+   Operator  Meaning
+   --------  ----------------------------------------
+   &&        Logical AND (short-circuit evaluation)
+   ||        Logical OR  (short-circuit evaluation)
+```
+
+   Both operands MUST be of type bool.  The result type is bool.
+   Short-circuit evaluation means the right operand is not evaluated
+   if the left operand determines the result (false for &&, true
+   for ||).  These operators have lower precedence than comparison
+   operators and higher precedence than match expressions.
+
+   Example:
+
+```
+   if(a>0 && b>0){
+     <a+b
+   };
+```
+
+### 7.9.  Error Propagation
 
    Syntax:
 
@@ -830,14 +1021,14 @@ Table of Contents
    Example:
 
 ```
-   f=handle(req:http.$req):http.$res!$api_err{
-     body=json.dec(req.body)!$api_err.$bad_request;
-     user=db.get_user(body.id)!$api_err.$db_error;
+   f=handle(req:http.$req):http.$res!$apierr{
+     body=json.dec(req.body)!$apierr.BadRequest;
+     user=db.getuser(body.id)!$apierr.DbError;
      <http.$res.ok(json.enc(user))
    };
 ```
 
-### 7.9.  Arena Blocks
+### 7.10.  Arena Blocks
 
    Syntax:
 
@@ -853,7 +1044,7 @@ Table of Contents
    an arena-local allocation across the arena boundary is a compile
    error (E5001).
 
-### 7.10.  Complete Example
+### 7.11.  Complete Example
 
    HTTP user API module:
 
@@ -863,14 +1054,14 @@ Table of Contents
    i=db:std.db;
    i=json:std.json;
 
-   t=$user{id:u64;name:$str;email:$str};
-   t=$user_err{$not_found:u64;$db_err:$str};
+   t=$user{id:u64;name:str;email:str};
+   t=$usererr{NotFound:u64;DbErr:str};
 
-   f=fetch(id:u64):$user!$user_err{
+   f=fetch(id:u64):$user!$usererr{
      r=db.one(
        "SELECT id,name,email FROM users WHERE id=?";
        @(id)
-     )!$user_err.$db_err;
+     )!$usererr.DbErr;
      <$user{
        id:r.u64(id);
        name:r.str(name);
@@ -883,8 +1074,8 @@ Table of Contents
        <http.$res.bad("id must be number")
      };
      fetch(id)|{
-       $ok:u  <http.$res.ok(json.enc(u));
-       $err:e <http.$res.err(json.enc(e))
+       Ok:u  <http.$res.ok(json.enc(u));
+       Err:e <http.$res.err(json.enc(e))
      }
    });
 ```
@@ -1022,12 +1213,12 @@ Table of Contents
      "span_start": 242,
      "span_end": 258,
      "context": [
-       "10: f=get_user(id:u64):$user!$user_err{",
-       "11:   r=db.one(sql;@(id))!$user_err.$db_err;",
+       "10: f=getuser(id:u64):$user!$usererr{",
+       "11:   r=db.one(sql;@(id))!$usererr.DbErr;",
        "12:   <$user{id:r.str(id);name:r.str(name)}"
      ],
      "expected": "u64",
-     "got": "$str",
+     "got": "str",
      "fix": "r.u64(id)"
    }
 ```
@@ -1499,11 +1690,11 @@ Table of Contents
 ```
    [INST] Generate a tk function that fetches a user by ID from
    PostgreSQL.  Available: db.Conn.
-   Types: User{id:u64;name:Str}, DbErr{query_err:Str}
+   Types: User{id:u64;name:Str}, DbErr{QueryErr:Str}
    [/INST]
-   F=get_user(id:u64):User!DbErr{
+   F=getuser(id:u64):User!DbErr{
      r=db.one("SELECT id,name FROM users WHERE id=?",[id])
-       !DbErr.query_err;
+       !DbErr.QueryErr;
      <User{id:r.u64(id);name:r.str(name)}
    }
 ```
@@ -1514,11 +1705,11 @@ Table of Contents
 ```
    [INST] Generate a tk function that fetches a user by ID from
    PostgreSQL.  Available: db.$conn.
-   Types: $user{id:u64;name:$str}, $db_err{query_err:$str}
+   Types: $user{id:u64;name:str}, $dberr{QueryErr:str}
    [/INST]
-   f=get_user(id:u64):$user!$db_err{
+   f=getuser(id:u64):$user!$dberr{
      r=db.one("SELECT id,name FROM users WHERE id=?";@(id))
-       !$db_err.query_err;
+       !$dberr.QueryErr;
      <$user{id:r.u64(id);name:r.str(name)}
    }
 ```
@@ -1528,15 +1719,15 @@ Table of Contents
 ```
    [INST] Fix this tk program.
    Error: stage:type_check;error:field_type_mismatch;
-   pos:89;expected:u64;got:$str;fix:r.u64(id)
+   pos:89;expected:u64;got:str;fix:r.u64(id)
    [BROKEN]
-   f=get_user(id:u64):$user!$db_err{
-     r=db.one(sql;@(id))!$db_err.query_err;
+   f=getuser(id:u64):$user!$dberr{
+     r=db.one(sql;@(id))!$dberr.QueryErr;
      <$user{id:r.str(id);name:r.str(name)}
    }
    [/INST]
-   f=get_user(id:u64):$user!$db_err{
-     r=db.one(sql;@(id))!$db_err.query_err;
+   f=getuser(id:u64):$user!$dberr{
+     r=db.one(sql;@(id))!$dberr.QueryErr;
      <$user{id:r.u64(id);name:r.str(name)}
    }
 ```
@@ -1548,7 +1739,7 @@ Table of Contents
    [PYTHON 85t] def sum_arr(a): return sum(a)
    [C 62t] int sum_arr(int*a,int n){int s=0;
            for(int i=0;i<n;i++)s+=a[i];return s;}
-   [TK 28t] f=sum_arr(a:@i64):i64{
+   [TK 28t] f=sumarr(a:@i64):i64{
               let s=mut.0;
               lp(let i=0;i<a.len;i=i+1){s=s+a.get(i)};
               <s}
@@ -1691,9 +1882,9 @@ Table of Contents
 
    Status (as of April 2026):
 
-   o  Compiler: 3,700 lines of C, 90/90 conformance tests, 9/9 e2e
-      tests.  LLVM IR backend producing native binaries for x86-64
-      and ARM64.
+   o  Compiler: 3,700 lines of C, 172 conformance tests, 13 e2e
+      tests, 9 stress tests.  LLVM IR backend producing native
+      binaries for x86-64 and ARM64.
    o  Corpus: ~47,000 programs generated (27K Phase A, 10K Phase B,
       5K Phase C, 5K Phase D).
    o  Training: QLoRA fine-tune of Qwen 2.5 Coder 7B Instruct
@@ -1947,7 +2138,9 @@ Table of Contents
    Startup time              <1ms          ~100ms       <1ms         No VM
    Memory (req. handler)     Arena/no GC   GC           Manual       Arena
    Training data available   ~47K corpus   Vast         Vast         Built
-   Conformance tests         90/90         N/A          N/A          100%
+   Conformance tests         172           N/A          N/A          100%
+   E2E tests                 13            N/A          N/A          100%
+   Stress tests              9             N/A          N/A          100%
    Compiler size             ~3,700 LOC    N/A          N/A          C99
 ```
 
@@ -2229,8 +2422,7 @@ Table of Contents
 
 ## Author's Address
 
-   M. Karwalski
+   Matt Watt
    tokelang.dev
 
-   Email: spec@tokelang.dev
    URI:   https://github.com/tokelang/spec

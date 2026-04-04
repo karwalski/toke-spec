@@ -400,7 +400,7 @@ introduces an import alias into the module scope.
 3. If a version string is present, the compiler first tries the versioned
    path `<module/path>.<version>.tki`.
 
-### 6.2 Interface Files (.tokei / .tki)
+### 6.2 Interface Files (.tki)
 
 Interface files (`.tki`) export the public signatures of a module. They
 contain function signatures, type declarations, and constant declarations

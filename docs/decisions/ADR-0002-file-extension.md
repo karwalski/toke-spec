@@ -47,7 +47,7 @@ upstream (requires 200+ repos or significant adoption).
 
 ### Tcl/Tk toolkit
 
-Tcl/Tk has used `.tk` for GUI scripts since 1991. While the RFC (Section 3.2)
+Tcl/Tk has used `.tk` for GUI scripts since 1991. While the specification (Section 3.2)
 assessed the *naming* conflict as low-risk (different case, different domain),
 the *file extension* conflict is more concrete: editors with Tcl plugins will
 apply Tcl syntax highlighting to toke files, and file managers may associate
@@ -67,7 +67,7 @@ file manager associations, not editor/IDE conflicts.
 ### Option A: Keep `.tk`
 
 - **Pro:** Already used everywhere in the project (spec, compiler tests, corpus
-  tooling, RFC). Short, memorable, consistent with the `tk` shorthand pattern
+  tooling, specification). Short, memorable, consistent with the `tk` shorthand pattern
   (language=toke, files=.tk, compiler=tkc, interface=.tki).
 - **Pro:** The compiler does not enforce the extension, so the convention is
   soft and could be changed later without compiler modifications.
@@ -162,6 +162,6 @@ Linguist PR in the medium term, the cost of keeping `.tk` is low.
 - GitHub Linguist languages.yml: Tcl entry includes `.tk`
   (https://github.com/github-linguist/linguist/blob/main/lib/linguist/languages.yml)
 - toke spec v02, Section 2: "File extension: .tk"
-- toke RFC, Section 3.2: namespace conflict analysis
+- toke specification, Section 3.2: namespace conflict analysis
 - Linguist overrides documentation:
   https://github.com/github-linguist/linguist/blob/main/docs/overrides.md

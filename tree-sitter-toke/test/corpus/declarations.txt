@@ -1,0 +1,197 @@
+================================================================================
+Module declaration
+================================================================================
+
+M=main;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier))))
+
+================================================================================
+Module declaration with dotted path
+================================================================================
+
+M=std.io;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)
+      (identifier))))
+
+================================================================================
+Import declaration
+================================================================================
+
+M=main;
+I=io:std.io;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (import_declaration
+    (identifier)
+    (module_path
+      (identifier)
+      (identifier))))
+
+================================================================================
+Import declaration with string path
+================================================================================
+
+M=main;
+I=libc:ext.libc "libc.h";
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (import_declaration
+    (identifier)
+    (module_path
+      (identifier)
+      (identifier))
+    (string_literal)))
+
+================================================================================
+Type declaration (struct)
+================================================================================
+
+M=main;
+T=Point{x:i64;y:i64};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (type_declaration
+    (type_identifier)
+    (field_list
+      (field
+        (identifier)
+        (type_expression
+          (scalar_type)))
+      (field
+        (identifier)
+        (type_expression
+          (scalar_type))))))
+
+================================================================================
+Function declaration with body
+================================================================================
+
+M=main;
+F=add(a:i64;b:i64):i64{<a+b};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type)))
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (additive_expression
+          (identifier)
+          (identifier))))))
+
+================================================================================
+Function declaration without body (extern)
+================================================================================
+
+M=main;
+F=puts(s:*Str):i64;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (pointer_type
+            (type_expression
+              (scalar_type))))))
+    (return_spec
+      (type_expression
+        (scalar_type)))))
+
+================================================================================
+Constant declaration
+================================================================================
+
+M=main;
+max_size=1024:i64;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (const_declaration
+    (identifier)
+    (integer_literal)
+    (type_expression
+      (scalar_type))))
+
+================================================================================
+Function with error return type
+================================================================================
+
+M=main;
+F=parse(s:Str):i64!Str{<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type))))
+    (return_spec
+      (type_expression
+        (scalar_type))
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (integer_literal)))))

@@ -1,0 +1,442 @@
+================================================================================
+Integer literal
+================================================================================
+
+M=main;
+F=f():i64{<42};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Float literal
+================================================================================
+
+M=main;
+F=f():f64{<3.14};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (float_literal)))))
+
+================================================================================
+String literal
+================================================================================
+
+M=main;
+F=f():Str{<"hello"};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (string_literal)))))
+
+================================================================================
+Boolean literals
+================================================================================
+
+M=main;
+F=f():bool{<true};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (boolean_literal)))))
+
+================================================================================
+Binary arithmetic expressions
+================================================================================
+
+M=main;
+F=f():i64{<1+2*3};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (additive_expression
+          (integer_literal)
+          (multiplicative_expression
+            (integer_literal)
+            (integer_literal)))))))
+
+================================================================================
+Unary negation
+================================================================================
+
+M=main;
+F=f(x:i64):i64{< -x};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (unary_expression
+          (identifier))))))
+
+================================================================================
+Unary logical not
+================================================================================
+
+M=main;
+F=f(x:bool):bool{< !x};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (unary_expression
+          (identifier))))))
+
+================================================================================
+Comparison expression
+================================================================================
+
+M=main;
+F=f(a:i64;b:i64):bool{<a>b};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type)))
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (compare_expression
+          (identifier)
+          (identifier))))))
+
+================================================================================
+Function call expression
+================================================================================
+
+M=main;
+F=f():i64{<add(1;2)};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (integer_literal)
+            (integer_literal)))))))
+
+================================================================================
+Field access expression
+================================================================================
+
+M=main;
+F=f(p:Point):i64{<p.x};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (type_identifier))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (postfix_expression
+          (identifier)
+          (identifier))))))
+
+================================================================================
+Array indexing expression
+================================================================================
+
+M=main;
+F=f(arr:[i64]):i64{<arr[0]};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (array_type
+            (type_expression
+              (scalar_type))))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (postfix_expression
+          (identifier)
+          (integer_literal))))))
+
+================================================================================
+Cast expression
+================================================================================
+
+M=main;
+F=f(x:i64):f64{<x as f64};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (cast_expression
+          (identifier)
+          (type_expression
+            (scalar_type)))))))
+
+================================================================================
+Array literal
+================================================================================
+
+M=main;
+F=f():[i64]{<[1;2;3]};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (array_type
+          (type_expression
+            (scalar_type)))))
+    (statement_list
+      (return_statement
+        (array_literal
+          (integer_literal)
+          (integer_literal)
+          (integer_literal))))))
+
+================================================================================
+Struct literal
+================================================================================
+
+M=main;
+T=Point{x:i64;y:i64};
+F=f():Point{<Point{x:1;y:2}};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (type_declaration
+    (type_identifier)
+    (field_list
+      (field
+        (identifier)
+        (type_expression
+          (scalar_type)))
+      (field
+        (identifier)
+        (type_expression
+          (scalar_type)))))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (type_identifier)))
+    (statement_list
+      (return_statement
+        (struct_literal
+          (type_identifier)
+          (field_init
+            (identifier)
+            (integer_literal))
+          (field_init
+            (identifier)
+            (integer_literal)))))))
+
+================================================================================
+Error propagation expression
+================================================================================
+
+M=main;
+F=f():i64!Str{<parse("42")!Str};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type))
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (propagate_expression
+          (call_expression
+            (identifier)
+            (argument_list
+              (string_literal)))
+          (type_expression
+            (scalar_type)))))))
+
+================================================================================
+Parenthesized expression
+================================================================================
+
+M=main;
+F=f():i64{<(1+2)*3};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (multiplicative_expression
+          (additive_expression
+            (integer_literal)
+            (integer_literal))
+          (integer_literal))))))

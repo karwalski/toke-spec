@@ -1,0 +1,314 @@
+================================================================================
+Let binding
+================================================================================
+
+M=main;
+F=f():i64{let x=42;<x};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (bind_statement
+        (identifier)
+        (integer_literal))
+      (return_statement
+        (identifier)))))
+
+================================================================================
+Mutable let binding
+================================================================================
+
+M=main;
+F=f():i64{let x=mut.0;<x};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (mut_bind_statement
+        (identifier)
+        (integer_literal))
+      (return_statement
+        (identifier)))))
+
+================================================================================
+Assignment statement
+================================================================================
+
+M=main;
+F=f():i64{let x=mut.0;x=42;<x};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (mut_bind_statement
+        (identifier)
+        (integer_literal))
+      (assign_statement
+        (identifier)
+        (integer_literal))
+      (return_statement
+        (identifier)))))
+
+================================================================================
+If statement
+================================================================================
+
+M=main;
+F=f(x:i64):i64{if(x>0){<x}};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (if_statement
+        (compare_expression
+          (identifier)
+          (integer_literal))
+        (statement_list
+          (return_statement
+            (identifier)))))))
+
+================================================================================
+If-else statement
+================================================================================
+
+M=main;
+F=f(x:i64):i64{if(x>0){<x}el{<0}};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (scalar_type))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (if_statement
+        (compare_expression
+          (identifier)
+          (integer_literal))
+        (statement_list
+          (return_statement
+            (identifier)))
+        (else_clause
+          (statement_list
+            (return_statement
+              (integer_literal))))))))
+
+================================================================================
+Loop statement
+================================================================================
+
+M=main;
+F=f():i64{let sum=mut.0;lp(let i=0;i<10;i=i+1){sum=sum+i};<sum};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (mut_bind_statement
+        (identifier)
+        (integer_literal))
+      (loop_statement
+        (loop_init
+          (identifier)
+          (integer_literal))
+        (compare_expression
+          (identifier)
+          (integer_literal))
+        (loop_step
+          (identifier)
+          (additive_expression
+            (identifier)
+            (integer_literal)))
+        (statement_list
+          (assign_statement
+            (identifier)
+            (additive_expression
+              (identifier)
+              (identifier)))))
+      (return_statement
+        (identifier)))))
+
+================================================================================
+Break statement
+================================================================================
+
+M=main;
+F=f():void{lp(let i=0;i<10;i=i+1){br}};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (loop_statement
+        (loop_init
+          (identifier)
+          (integer_literal))
+        (compare_expression
+          (identifier)
+          (integer_literal))
+        (loop_step
+          (identifier)
+          (additive_expression
+            (identifier)
+            (integer_literal)))
+        (statement_list
+          (break_statement))))))
+
+================================================================================
+Match expression
+================================================================================
+
+M=main;
+F=f(x:Shape):i64{<x|{Circle:c c.radius;Rect:r r.w*r.h}};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_expression
+          (type_identifier))))
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (match_expression
+          (identifier)
+          (match_arm_list
+            (match_arm
+              (type_identifier)
+              (identifier)
+              (postfix_expression
+                (identifier)
+                (identifier)))
+            (match_arm
+              (type_identifier)
+              (identifier)
+              (multiplicative_expression
+                (postfix_expression
+                  (identifier)
+                  (identifier))
+                (postfix_expression
+                  (identifier)
+                  (identifier))))))))))
+
+================================================================================
+Return with rt keyword
+================================================================================
+
+M=main;
+F=f():i64{rt 42};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Expression statement (function call)
+================================================================================
+
+M=main;
+F=f():void{puts("hello")};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (scalar_type)))
+    (statement_list
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (string_literal)))))))

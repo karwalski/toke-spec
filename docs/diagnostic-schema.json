@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tokelang.dev/schemas/diagnostic-v1.json",
+  "title": "toke Diagnostic",
+  "description": "Schema for a single toke compiler diagnostic (one JSON object per diagnostic, emitted to stderr). Conforms to toke-spec-v02.md Appendix B.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "diagnostic_id",
+    "error_code",
+    "severity",
+    "stage",
+    "message",
+    "file",
+    "pos",
+    "span_start",
+    "span_end"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Schema version. Bumped on breaking changes to this schema."
+    },
+    "diagnostic_id": {
+      "type": "string",
+      "pattern": "^D[0-9]{4}$",
+      "description": "Sequential diagnostic ID within a single compilation (D0001, D0002, ...)."
+    },
+    "error_code": {
+      "type": "string",
+      "pattern": "^[EW][0-9]{4}$",
+      "description": "Stable error code. E = error, W = warning. Ranges: 1xxx = lex, 2xxx = parse, 3xxx = name resolution, 4xxx = type check, 9xxx = codegen."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["error", "warning", "info"],
+      "description": "Diagnostic severity level."
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["lex", "parse", "name_resolution", "type_check", "arena_check", "ir_lower", "codegen"],
+      "description": "Compiler stage that produced this diagnostic."
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable diagnostic message."
+    },
+    "file": {
+      "type": "string",
+      "description": "Source file path. Empty string if not yet populated."
+    },
+    "pos": {
+      "type": "object",
+      "required": ["offset", "line", "col"],
+      "properties": {
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Byte offset from file start."
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-based line number."
+        },
+        "col": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "1-based column number (byte offset within line)."
+        }
+      },
+      "additionalProperties": false,
+      "description": "Source position where the diagnostic was raised."
+    },
+    "span_start": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Byte offset of the start of the error span."
+    },
+    "span_end": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Byte offset of the end of the error span (exclusive)."
+    },
+    "context": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Source lines surrounding the error for display. May be empty."
+    },
+    "expected": {
+      "type": "string",
+      "description": "What the compiler expected at this position (e.g., token type). May be empty."
+    },
+    "got": {
+      "type": "string",
+      "description": "What the compiler found instead. May be empty."
+    },
+    "fix": {
+      "type": "string",
+      "description": "Suggested fix text. Only present when the compiler can suggest a concrete repair. The fix field MUST be correct for every valid program that triggers this error code."
+    }
+  },
+  "additionalProperties": false
+}

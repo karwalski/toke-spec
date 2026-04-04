@@ -266,9 +266,11 @@ No other escape sequences are defined. An unrecognised escape sequence is a comp
 
 ## 8. Character Set — Phase 2 (56 Characters) [N]
 
+> **Note (2026-04-04):** Phase 2 is now the **normative default profile**. The full Phase 2 specification, including grammar, lexical rules, and transformation rules, is in `spec/phase2-profile.md`. Phase 1 is redesignated as the legacy compatibility profile. The summary below is retained for context; `spec/phase2-profile.md` is authoritative where they differ.
+
 Phase 2 is a reduced character set profile for use with the purpose-built toke tokenizer. It is a strict subset of Phase 1 except for two new sigil characters (`$` and `@`).
 
-Phase 2 source is not valid Phase 1 source. A conforming compiler shall accept a command-line flag or file header indicating Phase 2 mode. The default mode is Phase 1.
+Phase 2 source is not valid Phase 1 source. A conforming compiler shall accept Phase 2 source by default. The `--phase1` flag enables Phase 1 compatibility mode.
 
 ### 8.1 Phase 1 to Phase 2 Transformations
 
