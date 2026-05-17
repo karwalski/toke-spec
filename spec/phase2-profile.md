@@ -1,3 +1,9 @@
+> **STATUS: FROZEN** — This document describes the Phase 2 (v0.2) syntax profile.
+> The active specification is v0.3, maintained in [toke/docs/](https://github.com/karwalski/toke/tree/main/docs).
+> This file is retained for historical reference. Do not modify.
+>
+> Frozen: 2026-04-05 (v0.2-syntax-lock)
+
 # toke Phase 2 — Normative Profile Specification
 
 **Status:** FROZEN — Syntax lock-in 2026-04-05 (v0.2-syntax-lock). No syntax changes without formal amendment.
