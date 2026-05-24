@@ -2,7 +2,7 @@
 Module declaration
 ================================================================================
 
-M=main;
+m=main;
 
 --------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ M=main;
 Module declaration with dotted path
 ================================================================================
 
-M=std.io;
+m=std.io;
 
 --------------------------------------------------------------------------------
 
@@ -29,8 +29,8 @@ M=std.io;
 Import declaration
 ================================================================================
 
-M=main;
-I=io:std.io;
+m=main;
+i=io:std.io;
 
 --------------------------------------------------------------------------------
 
@@ -45,31 +45,11 @@ I=io:std.io;
       (identifier))))
 
 ================================================================================
-Import declaration with string path
-================================================================================
-
-M=main;
-I=libc:ext.libc "libc.h";
-
---------------------------------------------------------------------------------
-
-(source_file
-  (module_declaration
-    (module_path
-      (identifier)))
-  (import_declaration
-    (identifier)
-    (module_path
-      (identifier)
-      (identifier))
-    (string_literal)))
-
-================================================================================
 Type declaration (struct)
 ================================================================================
 
-M=main;
-T=Point{x:i64;y:i64};
+m=main;
+t=point{x:$i64;y:$i64};
 
 --------------------------------------------------------------------------------
 
@@ -78,23 +58,23 @@ T=Point{x:i64;y:i64};
     (module_path
       (identifier)))
   (type_declaration
-    (type_identifier)
+    (identifier)
     (field_list
       (field
         (identifier)
         (type_expression
-          (scalar_type)))
+          (sigil_type)))
       (field
         (identifier)
         (type_expression
-          (scalar_type))))))
+          (sigil_type))))))
 
 ================================================================================
 Function declaration with body
 ================================================================================
 
-M=main;
-F=add(a:i64;b:i64):i64{<a+b};
+m=main;
+f=add(a:$i64;b:$i64):$i64{<a+b};
 
 --------------------------------------------------------------------------------
 
@@ -108,14 +88,14 @@ F=add(a:i64;b:i64):i64{<a+b};
       (parameter
         (identifier)
         (type_expression
-          (scalar_type)))
+          (sigil_type)))
       (parameter
         (identifier)
         (type_expression
-          (scalar_type))))
+          (sigil_type))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (additive_expression
@@ -126,8 +106,8 @@ F=add(a:i64;b:i64):i64{<a+b};
 Function declaration without body (extern)
 ================================================================================
 
-M=main;
-F=puts(s:*Str):i64;
+m=main;
+f=puts(s:$str):$i64;
 
 --------------------------------------------------------------------------------
 
@@ -141,19 +121,17 @@ F=puts(s:*Str):i64;
       (parameter
         (identifier)
         (type_expression
-          (pointer_type
-            (type_expression
-              (scalar_type))))))
+          (sigil_type))))
     (return_spec
       (type_expression
-        (scalar_type)))))
+        (sigil_type)))))
 
 ================================================================================
 Constant declaration
 ================================================================================
 
-M=main;
-max_size=1024:i64;
+m=main;
+max_size=1024:$i64;
 
 --------------------------------------------------------------------------------
 
@@ -165,14 +143,14 @@ max_size=1024:i64;
     (identifier)
     (integer_literal)
     (type_expression
-      (scalar_type))))
+      (sigil_type))))
 
 ================================================================================
 Function with error return type
 ================================================================================
 
-M=main;
-F=parse(s:Str):i64!Str{<0};
+m=main;
+f=parse(s:$str):$i64!$str{<0};
 
 --------------------------------------------------------------------------------
 
@@ -186,12 +164,12 @@ F=parse(s:Str):i64!Str{<0};
       (parameter
         (identifier)
         (type_expression
-          (scalar_type))))
+          (sigil_type))))
     (return_spec
       (type_expression
-        (scalar_type))
+        (sigil_type))
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (integer_literal)))))

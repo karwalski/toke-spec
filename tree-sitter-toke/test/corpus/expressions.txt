@@ -2,8 +2,8 @@
 Integer literal
 ================================================================================
 
-M=main;
-F=f():i64{<42};
+m=main;
+f=f():$i64{<42};
 
 --------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ F=f():i64{<42};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (integer_literal)))))
@@ -24,8 +24,8 @@ F=f():i64{<42};
 Float literal
 ================================================================================
 
-M=main;
-F=f():f64{<3.14};
+m=main;
+f=f():$f64{<3.14};
 
 --------------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ F=f():f64{<3.14};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (float_literal)))))
@@ -46,8 +46,8 @@ F=f():f64{<3.14};
 String literal
 ================================================================================
 
-M=main;
-F=f():Str{<"hello"};
+m=main;
+f=f():$str{<"hello"};
 
 --------------------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ F=f():Str{<"hello"};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (string_literal)))))
@@ -68,8 +68,8 @@ F=f():Str{<"hello"};
 Boolean literals
 ================================================================================
 
-M=main;
-F=f():bool{<true};
+m=main;
+f=f():$bool{<true};
 
 --------------------------------------------------------------------------------
 
@@ -81,7 +81,7 @@ F=f():bool{<true};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (boolean_literal)))))
@@ -90,8 +90,8 @@ F=f():bool{<true};
 Binary arithmetic expressions
 ================================================================================
 
-M=main;
-F=f():i64{<1+2*3};
+m=main;
+f=f():$i64{<1+2*3};
 
 --------------------------------------------------------------------------------
 
@@ -103,7 +103,7 @@ F=f():i64{<1+2*3};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (additive_expression
@@ -116,8 +116,8 @@ F=f():i64{<1+2*3};
 Unary negation
 ================================================================================
 
-M=main;
-F=f(x:i64):i64{< -x};
+m=main;
+f=f(x:$i64):$i64{< -x};
 
 --------------------------------------------------------------------------------
 
@@ -131,10 +131,10 @@ F=f(x:i64):i64{< -x};
       (parameter
         (identifier)
         (type_expression
-          (scalar_type))))
+          (sigil_type))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (unary_expression
@@ -144,8 +144,8 @@ F=f(x:i64):i64{< -x};
 Unary logical not
 ================================================================================
 
-M=main;
-F=f(x:bool):bool{< !x};
+m=main;
+f=f(x:$bool):$bool{< !x};
 
 --------------------------------------------------------------------------------
 
@@ -159,10 +159,10 @@ F=f(x:bool):bool{< !x};
       (parameter
         (identifier)
         (type_expression
-          (scalar_type))))
+          (sigil_type))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (unary_expression
@@ -172,8 +172,8 @@ F=f(x:bool):bool{< !x};
 Comparison expression
 ================================================================================
 
-M=main;
-F=f(a:i64;b:i64):bool{<a>b};
+m=main;
+f=f(a:$i64;b:$i64):$bool{<a>b};
 
 --------------------------------------------------------------------------------
 
@@ -187,14 +187,14 @@ F=f(a:i64;b:i64):bool{<a>b};
       (parameter
         (identifier)
         (type_expression
-          (scalar_type)))
+          (sigil_type)))
       (parameter
         (identifier)
         (type_expression
-          (scalar_type))))
+          (sigil_type))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (compare_expression
@@ -205,8 +205,8 @@ F=f(a:i64;b:i64):bool{<a>b};
 Function call expression
 ================================================================================
 
-M=main;
-F=f():i64{<add(1;2)};
+m=main;
+f=f():$i64{<add(1;2)};
 
 --------------------------------------------------------------------------------
 
@@ -218,7 +218,7 @@ F=f():i64{<add(1;2)};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (call_expression
@@ -231,8 +231,8 @@ F=f():i64{<add(1;2)};
 Field access expression
 ================================================================================
 
-M=main;
-F=f(p:Point):i64{<p.x};
+m=main;
+f=f(p:point):$i64{<p.x};
 
 --------------------------------------------------------------------------------
 
@@ -246,10 +246,10 @@ F=f(p:Point):i64{<p.x};
       (parameter
         (identifier)
         (type_expression
-          (type_identifier))))
+          (identifier))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (postfix_expression
@@ -257,11 +257,11 @@ F=f(p:Point):i64{<p.x};
           (identifier))))))
 
 ================================================================================
-Array indexing expression
+Array indexing via get method
 ================================================================================
 
-M=main;
-F=f(arr:[i64]):i64{<arr[0]};
+m=main;
+f=f(arr:@($i64)):$i64{<arr.get(0)};
 
 --------------------------------------------------------------------------------
 
@@ -277,22 +277,25 @@ F=f(arr:[i64]):i64{<arr[0]};
         (type_expression
           (array_type
             (type_expression
-              (scalar_type))))))
+              (sigil_type))))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
-        (postfix_expression
-          (identifier)
-          (integer_literal))))))
+        (call_expression
+          (postfix_expression
+            (identifier)
+            (identifier))
+          (argument_list
+            (integer_literal)))))))
 
 ================================================================================
 Cast expression
 ================================================================================
 
-M=main;
-F=f(x:i64):f64{<x as f64};
+m=main;
+f=f(x:$i64):$f64{<x as $f64};
 
 --------------------------------------------------------------------------------
 
@@ -306,23 +309,23 @@ F=f(x:i64):f64{<x as f64};
       (parameter
         (identifier)
         (type_expression
-          (scalar_type))))
+          (sigil_type))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (cast_expression
           (identifier)
           (type_expression
-            (scalar_type)))))))
+            (sigil_type)))))))
 
 ================================================================================
 Array literal
 ================================================================================
 
-M=main;
-F=f():[i64]{<[1;2;3]};
+m=main;
+f=f():@($i64){<@(1;2;3)};
 
 --------------------------------------------------------------------------------
 
@@ -336,7 +339,7 @@ F=f():[i64]{<[1;2;3]};
       (type_expression
         (array_type
           (type_expression
-            (scalar_type)))))
+            (sigil_type)))))
     (statement_list
       (return_statement
         (array_literal
@@ -348,9 +351,9 @@ F=f():[i64]{<[1;2;3]};
 Struct literal
 ================================================================================
 
-M=main;
-T=Point{x:i64;y:i64};
-F=f():Point{<Point{x:1;y:2}};
+m=main;
+t=point{x:$i64;y:$i64};
+f=f():point{<point{x:1;y:2}};
 
 --------------------------------------------------------------------------------
 
@@ -359,25 +362,25 @@ F=f():Point{<Point{x:1;y:2}};
     (module_path
       (identifier)))
   (type_declaration
-    (type_identifier)
+    (identifier)
     (field_list
       (field
         (identifier)
         (type_expression
-          (scalar_type)))
+          (sigil_type)))
       (field
         (identifier)
         (type_expression
-          (scalar_type)))))
+          (sigil_type)))))
   (function_declaration
     (identifier)
     (return_spec
       (type_expression
-        (type_identifier)))
+        (identifier)))
     (statement_list
       (return_statement
         (struct_literal
-          (type_identifier)
+          (identifier)
           (field_init
             (identifier)
             (integer_literal))
@@ -389,8 +392,8 @@ F=f():Point{<Point{x:1;y:2}};
 Error propagation expression
 ================================================================================
 
-M=main;
-F=f():i64!Str{<parse("42")!Str};
+m=main;
+f=f():$i64!$str{<parse("42")!$str};
 
 --------------------------------------------------------------------------------
 
@@ -402,9 +405,9 @@ F=f():i64!Str{<parse("42")!Str};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type))
+        (sigil_type))
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (propagate_expression
@@ -413,14 +416,14 @@ F=f():i64!Str{<parse("42")!Str};
             (argument_list
               (string_literal)))
           (type_expression
-            (scalar_type)))))))
+            (sigil_type)))))))
 
 ================================================================================
 Parenthesized expression
 ================================================================================
 
-M=main;
-F=f():i64{<(1+2)*3};
+m=main;
+f=f():$i64{<(1+2)*3};
 
 --------------------------------------------------------------------------------
 
@@ -432,7 +435,7 @@ F=f():i64{<(1+2)*3};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (multiplicative_expression

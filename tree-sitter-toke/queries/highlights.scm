@@ -1,9 +1,9 @@
-; Syntax highlighting queries for Toke (Profile 1)
+; Syntax highlighting queries for Toke (v0.3)
 ; For use with Tree-sitter compatible editors (Neovim, Helix, Zed, etc.)
 
-; ── Keywords ──────────────────────────────────────────────────────────
+; -- Keywords ------------------------------------------------------------------
 
-["M" "F" "T" "I"] @keyword
+["m" "f" "t" "i"] @keyword
 
 ["let" "mut"] @keyword
 
@@ -11,74 +11,69 @@
 
 ["lp" "br"] @keyword.repeat
 
+["mt"] @keyword
+
 ["as"] @keyword.operator
 
 ["rt"] @keyword.return
 
 "<" @keyword.return
 
-"arena" @keyword
+; -- Operators -----------------------------------------------------------------
 
-; ── Operators ─────────────────────────────────────────────────────────
-
-["+" "-" "*" "/" "!" "|"] @operator
+["+" "-" "*" "/" "%" "!"] @operator
 
 ["=" "<" ">"] @operator
 
-; ── Punctuation ───────────────────────────────────────────────────────
+; -- Punctuation ---------------------------------------------------------------
 
 ["(" ")"] @punctuation.bracket
 ["{" "}"] @punctuation.bracket
-["[" "]"] @punctuation.bracket
 
 [";"] @punctuation.delimiter
 [":"] @punctuation.delimiter
 ["."] @punctuation.delimiter
 
-; ── Literals ──────────────────────────────────────────────────────────
+"@" @punctuation.special
+
+; -- Literals ------------------------------------------------------------------
 
 (integer_literal) @number
 (float_literal) @number.float
 (string_literal) @string
 (boolean_literal) @boolean
 
-; ── Types ─────────────────────────────────────────────────────────────
+; -- Types ---------------------------------------------------------------------
 
-(scalar_type) @type.builtin
-
-(type_identifier) @type
-
-(pointer_type "*" @type.qualifier)
+(sigil_type) @type.builtin
 
 (array_type) @type
 
-(map_type) @type
-
-; ── Declarations ──────────────────────────────────────────────────────
+; -- Declarations --------------------------------------------------------------
 
 (module_declaration
   (module_path
     (identifier) @module))
 
 (function_declaration
-  "F" @keyword
+  "f" @keyword
   "=" @operator
   (identifier) @function)
 
 (type_declaration
-  "T" @keyword
+  "t" @keyword
   "=" @operator
-  (type_identifier) @type.definition)
+  (identifier) @type.definition)
 
 (import_declaration
-  "I" @keyword
+  "i" @keyword
   "=" @operator
   (identifier) @namespace)
 
 (const_declaration
   (identifier) @constant)
 
-; ── Parameters and fields ─────────────────────────────────────────────
+; -- Parameters and fields -----------------------------------------------------
 
 (parameter
   (identifier) @variable.parameter)
@@ -89,7 +84,7 @@
 (field_init
   (identifier) @property)
 
-; ── Expressions ───────────────────────────────────────────────────────
+; -- Expressions ---------------------------------------------------------------
 
 (call_expression
   (postfix_expression
@@ -103,7 +98,7 @@
   (identifier) @variable)
 
 (mut_bind_statement
-  "let" @keyword
+  "mut" @keyword
   (identifier) @variable)
 
 (assign_statement
@@ -111,8 +106,8 @@
 
 (identifier) @variable
 
-; ── Match ─────────────────────────────────────────────────────────────
+; -- Match ---------------------------------------------------------------------
 
 (match_arm
-  (type_identifier) @type
+  (identifier) @type
   (identifier) @variable)

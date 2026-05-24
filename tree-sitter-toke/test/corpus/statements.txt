@@ -2,8 +2,8 @@
 Let binding
 ================================================================================
 
-M=main;
-F=f():i64{let x=42;<x};
+m=main;
+f=f():$i64{let x=42;<x};
 
 --------------------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ F=f():i64{let x=42;<x};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (bind_statement
         (identifier)
@@ -24,11 +24,11 @@ F=f():i64{let x=42;<x};
         (identifier)))))
 
 ================================================================================
-Mutable let binding
+Mutable binding
 ================================================================================
 
-M=main;
-F=f():i64{let x=mut.0;<x};
+m=main;
+f=f():$i64{mut x=0;<x};
 
 --------------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ F=f():i64{let x=mut.0;<x};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (mut_bind_statement
         (identifier)
@@ -52,8 +52,8 @@ F=f():i64{let x=mut.0;<x};
 Assignment statement
 ================================================================================
 
-M=main;
-F=f():i64{let x=mut.0;x=42;<x};
+m=main;
+f=f():$i64{mut x=0;x=42;<x};
 
 --------------------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ F=f():i64{let x=mut.0;x=42;<x};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (mut_bind_statement
         (identifier)
@@ -80,8 +80,8 @@ F=f():i64{let x=mut.0;x=42;<x};
 If statement
 ================================================================================
 
-M=main;
-F=f(x:i64):i64{if(x>0){<x}};
+m=main;
+f=f(x:$i64):$i64{if(x>0){<x}};
 
 --------------------------------------------------------------------------------
 
@@ -95,10 +95,10 @@ F=f(x:i64):i64{if(x>0){<x}};
       (parameter
         (identifier)
         (type_expression
-          (scalar_type))))
+          (sigil_type))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (if_statement
         (compare_expression
@@ -112,8 +112,8 @@ F=f(x:i64):i64{if(x>0){<x}};
 If-else statement
 ================================================================================
 
-M=main;
-F=f(x:i64):i64{if(x>0){<x}el{<0}};
+m=main;
+f=f(x:$i64):$i64{if(x>0){<x}el{<0}};
 
 --------------------------------------------------------------------------------
 
@@ -127,10 +127,10 @@ F=f(x:i64):i64{if(x>0){<x}el{<0}};
       (parameter
         (identifier)
         (type_expression
-          (scalar_type))))
+          (sigil_type))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (if_statement
         (compare_expression
@@ -148,8 +148,8 @@ F=f(x:i64):i64{if(x>0){<x}el{<0}};
 Loop statement
 ================================================================================
 
-M=main;
-F=f():i64{let sum=mut.0;lp(let i=0;i<10;i=i+1){sum=sum+i};<sum};
+m=main;
+f=f():$i64{mut sum=0;lp(let i=0;i<10;i=i+1){sum=sum+i};<sum};
 
 --------------------------------------------------------------------------------
 
@@ -161,7 +161,7 @@ F=f():i64{let sum=mut.0;lp(let i=0;i<10;i=i+1){sum=sum+i};<sum};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (mut_bind_statement
         (identifier)
@@ -188,11 +188,11 @@ F=f():i64{let sum=mut.0;lp(let i=0;i<10;i=i+1){sum=sum+i};<sum};
         (identifier)))))
 
 ================================================================================
-Break statement
+Infinite loop
 ================================================================================
 
-M=main;
-F=f():void{lp(let i=0;i<10;i=i+1){br}};
+m=main;
+f=f():$void{lp{br}};
 
 --------------------------------------------------------------------------------
 
@@ -204,7 +204,30 @@ F=f():void{lp(let i=0;i<10;i=i+1){br}};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
+    (statement_list
+      (loop_statement
+        (statement_list
+          (break_statement))))))
+
+================================================================================
+Break statement
+================================================================================
+
+m=main;
+f=f():$void{lp(let i=0;i<10;i=i+1){br}};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (return_spec
+      (type_expression
+        (sigil_type)))
     (statement_list
       (loop_statement
         (loop_init
@@ -225,8 +248,8 @@ F=f():void{lp(let i=0;i<10;i=i+1){br}};
 Match expression
 ================================================================================
 
-M=main;
-F=f(x:Shape):i64{<x|{Circle:c c.radius;Rect:r r.w*r.h}};
+m=main;
+f=f(x:shape):$i64{<mt x{circle:c c.radius;rect:r r.w*r.h}};
 
 --------------------------------------------------------------------------------
 
@@ -240,23 +263,23 @@ F=f(x:Shape):i64{<x|{Circle:c c.radius;Rect:r r.w*r.h}};
       (parameter
         (identifier)
         (type_expression
-          (type_identifier))))
+          (identifier))))
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (match_expression
           (identifier)
           (match_arm_list
             (match_arm
-              (type_identifier)
+              (identifier)
               (identifier)
               (postfix_expression
                 (identifier)
                 (identifier)))
             (match_arm
-              (type_identifier)
+              (identifier)
               (identifier)
               (multiplicative_expression
                 (postfix_expression
@@ -270,8 +293,8 @@ F=f(x:Shape):i64{<x|{Circle:c c.radius;Rect:r r.w*r.h}};
 Return with rt keyword
 ================================================================================
 
-M=main;
-F=f():i64{rt 42};
+m=main;
+f=f():$i64{rt 42};
 
 --------------------------------------------------------------------------------
 
@@ -283,7 +306,7 @@ F=f():i64{rt 42};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (return_statement
         (integer_literal)))))
@@ -292,8 +315,8 @@ F=f():i64{rt 42};
 Expression statement (function call)
 ================================================================================
 
-M=main;
-F=f():void{puts("hello")};
+m=main;
+f=f():$void{puts("hello")};
 
 --------------------------------------------------------------------------------
 
@@ -305,7 +328,7 @@ F=f():void{puts("hello")};
     (identifier)
     (return_spec
       (type_expression
-        (scalar_type)))
+        (sigil_type)))
     (statement_list
       (expression_statement
         (call_expression

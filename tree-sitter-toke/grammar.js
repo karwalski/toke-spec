@@ -1,11 +1,11 @@
 /**
- * Tree-sitter grammar for the Toke programming language (Profile 1).
+ * Tree-sitter grammar for the Toke programming language (v0.3).
  *
- * Based on the formal EBNF grammar in toke-spec/spec/grammar.ebnf.
- * Matches the reference compiler (tkc) as of 2026-03-29.
+ * v0.3 syntax uses lowercase keywords, $ type sigils, @() array literals,
+ * and semicolons as separators. No square brackets in the language.
  *
- * Note: Toke Profile 1 has no comment syntax. All source text is
- * significant. This is a deliberate language design choice.
+ * Keywords (13): m, f, t, i, if, el, lp, br, let, mut, as, rt, mt
+ * 55-char alphabet: lowercase a-z, 0-9, " ; : , . = + - * / % < > ! & | ( ) { } @ $ _ #
  */
 
 module.exports = grammar({
@@ -18,8 +18,6 @@ module.exports = grammar({
   conflicts: ($) => [
     // struct literal vs. block after type identifier
     [$.primary_expression, $.struct_literal],
-    // map literal vs. array literal (both start with '[')
-    [$.map_literal, $.array_literal],
   ],
 
   rules: {
@@ -37,36 +35,35 @@ module.exports = grammar({
       ),
 
     // ================================================================
-    // Module
+    // Module: m=name;
     // ================================================================
 
     module_declaration: ($) =>
-      seq("M", "=", $.module_path, $._terminator),
+      seq("m", "=", $.module_path, $._terminator),
 
     module_path: ($) =>
       seq($.identifier, repeat(seq(".", $.identifier))),
 
     // ================================================================
-    // Imports
+    // Imports: i=alias:path;
     // ================================================================
 
     import_declaration: ($) =>
       seq(
-        "I",
+        "i",
         "=",
         $.identifier,
         ":",
         $.module_path,
-        optional($.string_literal),
         $._terminator
       ),
 
     // ================================================================
-    // Type declarations
+    // Type declarations: t=name{fields}
     // ================================================================
 
     type_declaration: ($) =>
-      seq("T", "=", $.type_identifier, "{", $.field_list, "}", $._terminator),
+      seq("t", "=", $.identifier, "{", $.field_list, "}", $._terminator),
 
     field_list: ($) => seq($.field, repeat(seq(";", $.field))),
 
@@ -80,12 +77,12 @@ module.exports = grammar({
       seq($.identifier, "=", $._literal, ":", $.type_expression, $._terminator),
 
     // ================================================================
-    // Function declarations
+    // Function declarations: f=name(params):$rettype{body}
     // ================================================================
 
     function_declaration: ($) =>
       seq(
-        "F",
+        "f",
         "=",
         $.identifier,
         "(",
@@ -119,7 +116,6 @@ module.exports = grammar({
         $.if_statement,
         $.loop_statement,
         $.break_statement,
-        $.arena_statement,
         $.expression_statement
       ),
 
@@ -127,7 +123,7 @@ module.exports = grammar({
       seq("let", $.identifier, "=", $._expression, $._terminator),
 
     mut_bind_statement: ($) =>
-      seq("let", $.identifier, "=", "mut", ".", $._expression, $._terminator),
+      seq("mut", $.identifier, "=", $._expression, $._terminator),
 
     assign_statement: ($) =>
       seq($.identifier, "=", $._expression, $._terminator),
@@ -155,18 +151,23 @@ module.exports = grammar({
     else_clause: ($) => seq("el", "{", $.statement_list, "}"),
 
     loop_statement: ($) =>
-      seq(
-        "lp",
-        "(",
-        $.loop_init,
-        ";",
-        $._expression,
-        ";",
-        $.loop_step,
-        ")",
-        "{",
-        $.statement_list,
-        "}"
+      choice(
+        // C-style loop: lp(init;cond;step){body}
+        seq(
+          "lp",
+          "(",
+          $.loop_init,
+          ";",
+          $._expression,
+          ";",
+          $.loop_step,
+          ")",
+          "{",
+          $.statement_list,
+          "}"
+        ),
+        // Infinite loop: lp{body}
+        seq("lp", "{", $.statement_list, "}")
       ),
 
     loop_init: ($) =>
@@ -174,8 +175,9 @@ module.exports = grammar({
 
     loop_step: ($) => seq($.identifier, "=", $._expression),
 
-    arena_statement: ($) =>
-      seq("{", "arena", $.statement_list, "}"),
+    // mt expr{cases}
+    match_expression: ($) =>
+      seq("mt", $.compare_expression, "{", $.match_arm_list, "}"),
 
     expression_statement: ($) => seq($._expression, $._terminator),
 
@@ -183,13 +185,7 @@ module.exports = grammar({
     // Expressions -- precedence from lowest to highest
     // ================================================================
 
-    _expression: ($) => $.match_expression,
-
-    match_expression: ($) =>
-      choice(
-        seq($.compare_expression, "|", "{", $.match_arm_list, "}"),
-        $.compare_expression
-      ),
+    _expression: ($) => choice($.match_expression, $.compare_expression),
 
     compare_expression: ($) =>
       choice(
@@ -223,7 +219,7 @@ module.exports = grammar({
           3,
           seq(
             $.multiplicative_expression,
-            field("operator", choice("*", "/")),
+            field("operator", choice("*", "/", "%")),
             $.unary_expression
           )
         ),
@@ -261,10 +257,6 @@ module.exports = grammar({
           8,
           seq($.postfix_expression, ".", $.identifier)
         ),
-        prec.left(
-          8,
-          seq($.postfix_expression, "[", $._expression, "]")
-        ),
         $.primary_expression
       ),
 
@@ -274,8 +266,7 @@ module.exports = grammar({
         $._literal,
         seq("(", $._expression, ")"),
         $.struct_literal,
-        $.array_literal,
-        $.map_literal
+        $.array_literal
       ),
 
     // ================================================================
@@ -285,15 +276,15 @@ module.exports = grammar({
     match_arm_list: ($) => seq($.match_arm, repeat(seq(";", $.match_arm))),
 
     match_arm: ($) =>
-      seq($.type_identifier, ":", $.identifier, $._expression),
+      seq($.identifier, ":", $.identifier, $._expression),
 
     // ================================================================
-    // Struct, array, and map literals
+    // Struct and array literals
     // ================================================================
 
     struct_literal: ($) =>
       seq(
-        $.type_identifier,
+        $.identifier,
         "{",
         $.field_init,
         repeat(seq(";", $.field_init)),
@@ -302,13 +293,9 @@ module.exports = grammar({
 
     field_init: ($) => seq($.identifier, ":", $._expression),
 
+    // Array literal: @(1;2;3)
     array_literal: ($) =>
-      seq("[", optional(seq($._expression, repeat(seq(";", $._expression)))), "]"),
-
-    map_literal: ($) =>
-      seq("[", $.map_entry, repeat(seq(";", $.map_entry)), "]"),
-
-    map_entry: ($) => seq($._expression, ":", $._expression),
+      seq("@", "(", optional(seq($._expression, repeat(seq(";", $._expression)))), ")"),
 
     // ================================================================
     // Argument list
@@ -318,24 +305,19 @@ module.exports = grammar({
       seq($._expression, repeat(seq(";", $._expression))),
 
     // ================================================================
-    // Type expressions
+    // Type expressions -- $ sigil prefix for built-in types
     // ================================================================
 
     type_expression: ($) =>
       choice(
-        $.pointer_type,
-        $.map_type,
         $.array_type,
         $.function_type,
-        $.scalar_type,
-        $.type_identifier
+        $.sigil_type,
+        $.identifier
       ),
 
-    pointer_type: ($) => seq("*", $.type_expression),
-
-    map_type: ($) => seq("[", $.type_expression, ":", $.type_expression, "]"),
-
-    array_type: ($) => seq("[", $.type_expression, "]"),
+    // Array type: @($i64)
+    array_type: ($) => seq("@", "(", $.type_expression, ")"),
 
     function_type: ($) =>
       seq(
@@ -347,22 +329,23 @@ module.exports = grammar({
         $.type_expression
       ),
 
-    scalar_type: ($) =>
+    // Built-in types with $ sigil
+    sigil_type: ($) =>
       choice(
-        "u8",
-        "u16",
-        "u32",
-        "u64",
-        "i8",
-        "i16",
-        "i32",
-        "i64",
-        "f32",
-        "f64",
-        "bool",
-        "Str",
-        "Byte",
-        "void"
+        "$i8",
+        "$i16",
+        "$i32",
+        "$i64",
+        "$u8",
+        "$u16",
+        "$u32",
+        "$u64",
+        "$f32",
+        "$f64",
+        "$bool",
+        "$str",
+        "$byte",
+        "$void"
       ),
 
     // ================================================================
@@ -389,15 +372,12 @@ module.exports = grammar({
     // Identifiers
     // ================================================================
 
-    identifier: ($) => /[a-z_][a-zA-Z0-9_]*/,
-
-    type_identifier: ($) => /[A-Z][a-zA-Z0-9_]*/,
+    // v0.3: all lowercase, no uppercase letters in the 55-char alphabet
+    identifier: ($) => /[a-z_][a-z0-9_]*/,
 
     // ================================================================
     // Statement terminator
     // ================================================================
-    // Semicolon elision: trailing semicolons before '}' or EOF are optional.
-    // Tree-sitter handles this by making the terminator optional.
 
     _terminator: ($) => ";",
   },
