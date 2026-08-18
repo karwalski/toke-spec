@@ -3,6 +3,9 @@
 The normative language specification for toke (tk) — a compiled,
 statically typed programming language designed for LLM code generation.
 
+> **Known-stale:** tree-sitter grammar targets v0.3; v0.4 pass pending
+> (own story, filed outside Epic 130).
+
 ## What is toke?
 
 toke is a programming language built for machines, not humans. Its syntax
