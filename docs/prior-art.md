@@ -42,6 +42,11 @@ Human-readable (designed for human authors first) vs machine-optimized (designed
 | **Outlines** | Existing language | Human-readable | Structured generation framework; output remains standard language syntax |
 | **Turn** | New language | Unknown | Insufficient public information to place confidently [citation needed] |
 | **Anka** | New language | Human-readable | Insufficient public information to place confidently [citation needed] |
+| **KERN** | Existing language (compact reversible syntax over Python) | Machine-optimised | Python -> Kern -> Python deterministic transpiler; grammar v0.4; tokenizer-aware (validated against cl100k/o200k); benchmarks published against toke (see §6.8) |
+| **SimPy** | Existing language (AST-compatible Python subset) | Machine-optimised | ISSTA 2024; abbreviated keywords; ~20-30% cl100k reduction on HumanEval; needs fine-tuning (as listed by KERN) |
+| **Token Sugar** | Existing language (abbreviation layer over Python) | Machine-optimised | December 2025; structured abbreviations expanding to standard Python; ~15-25% savings via few-shot, no fine-tuning (as listed by KERN) |
+| **Sigil, KARN, NERD** | New language (compact / AI-agent languages with Python converters) | Machine-optimised | Listed by KERN as reproduced rivals; see §6.9 |
+| **Vyxal** | New language (golf language) | Machine-optimised (byte-golf, not LLM) | Listed by KERN as a token-density frontier comparator; see §6.9 |
 
 ---
 
@@ -58,6 +63,15 @@ Human-readable (designed for human authors first) vs machine-optimized (designed
 | **Outlines** | N/A (does not change token count of valid programs) | N/A | N/A (meta-tool) | Regex/CFG constraints guarantee structural validity | Library; integrates with HuggingFace, vLLM [citation needed] | Yes: structured generation with regex, JSON schema, CFG |
 | **Turn** | No data available [citation needed] | No data available [citation needed] | Unknown [citation needed] | Unknown [citation needed] | Unknown [citation needed] | Unknown [citation needed] |
 | **Anka** | No data available [citation needed] | No data available [citation needed] | Unknown [citation needed] | Unknown [citation needed] | Unknown [citation needed] | Unknown [citation needed] |
+| **KERN** | Kern Compact 28.25% fewer cl100k tokens than Python (1,682 EvalPlus/BigCodeBench programs); 4.56% beyond python-minifier 3.2.0; Kern-16K native BPE 38.11% below Python+cl100k. vs toke: 3,012 vs 6,347 cl100k on 60 Gate-1-era JSON-CLI pairs (reproduced) | No generation Pass@1 published; 541/542 is transpiler round-trip fidelity on EvalPlus | None: Kern -> Python source, run by CPython | Python's; deterministic round-trip guarantee | Single-author research repo (GitHub `OscarCode9/kern`), grammar v0.4, no PyPI, no licence file; full Python ecosystem inherited | Yes: tokenizer-aware syntax design, compact profile with BPE-aware alias ordering, purpose-built 16K BPE |
+| **SimPy** | ~20-30% cl100k reduction vs Python on HumanEval (per KERN's summary of ISSTA 2024 paper) | Requires fine-tuning; base models default to Python | None (Python subset) | Python's | Research artefact, no production implementation (per KERN) | Yes: AST-compatible compact Python subset |
+| **Token Sugar** | ~15-25% savings (per KERN) | Few-shot, no fine-tuning (per KERN) | None (expands to Python) | Python's | Rules hand-maintained (per KERN) | Yes: abbreviation layer over Python |
+| **Sigil 0.1.0** | KERN reports Kern 21.51% below Sigil on 1,682 programs (136,202 vs 173,520 cl100k) | KERN reports 4/542 EvalPlus for Sigil | Python converter/compiler (per KERN) | Unknown | Alpha, on PyPI (`sigil-lang`) | Yes |
+| **KARN v1.0.0** | Claims 76% fewer tokens than Python; KERN could not reproduce (sources/tokenizer unpublished) and measured Kern 2.19% below KARN on 46 executable pairs (670 vs 685) | 46/46 on KERN's pairs | Interpreter (per KERN) | Unknown | Unknown | Yes: AI-agent language |
+| **NERD 3.0.0** | Claims 50-70% fewer tokens (lexical count, not an LLM tokenizer, per KERN); KERN measured Kern 9.92% below NERD on 7 deterministic pairs (436 vs 484) | 7/7 | LLVM-backed (per KERN) | Unknown | Unknown | Yes: "machine-authorship" language |
+| **Vyxal 3.12.0** | Golf language; KERN measured 91 vs 151 cl100k on 14 frontier programs (Vyxal's own one-byte code page scores lower in bytes) | 14/14 | JVM interpreter | n/a | Mature golf-language community | No (byte-golf for humans; used by KERN as a density ceiling) |
+
+Rows for SimPy, Token Sugar, Sigil, KARN, NERD and Vyxal are transcribed from KERN's page and repository as they list them (https://oscarcode9.github.io/kern-language.html, fetched 2026-09-18; details in `toke/docs/about/reviews/kern-2026-08.md`); they have not been independently verified here.
 
 **Notes on toke metrics:** Token density and Pass@1 are from Gate 1 evaluation (2026-04-03). Methodology is documented in TEMSpec v1.0. All measurements are reproducible with published tooling and raw data.
 
@@ -251,6 +265,26 @@ Outlines (by dottxt) is a structured generation library for LLMs, supporting reg
 ### 6.7 Turn and Anka
 
 Insufficient public information is available about Turn and Anka to provide meaningful comparison [citation needed]. If these projects have published design documents, benchmarks, or source code, they should be evaluated against the same axes (language approach, audience, token density, Pass@1) and added to the comparison matrix.
+
+### 6.8 KERN (KERN-py)
+
+KERN (Oscar Martinez; https://oscarcode9.github.io/kern-language.html, published 2026-03-03, updated 2026-08-01; repository https://github.com/OscarCode9/kern, no licence file, no PyPI release) is "a compact representation of Python with a formal, deterministic and reversible grammar". A transpiler maps Python to Kern and a compiler maps Kern back to Python for execution; an optional compact profile alpha-renames locals with BPE-aware alias ordering. Every syntax decision is stated to be validated against cl100k_base and o200k_base. Because any Python corpus is Kern training data via the transpiler, KERN has no cold-start problem and inherits Python's ecosystem.
+
+**Relevance to toke:** KERN is the first third party to publish a benchmark directly against toke. Its shared-tokenizer result (Kern Compact 3,012 vs toke 6,347 cl100k tokens on 60 public Gate-1-era JSON-CLI pairs; 29/60 of those April-2026 generated toke sources accepted by tkc 2.8.0) reproduces exactly and is consistent with toke's own published cl100k figures. Its equal-vocabulary native-tokenizer lane (2,788 vs 3,906) scores toke's v0.3 tokenizer on legacy-syntax text; on migrated text the gap is 2,788 vs 2,872 with a confidence interval that includes parity. Its 541/542 "Pass@1" is transpiler fidelity on EvalPlus, not model generation. Full review: `toke/docs/about/reviews/kern-2026-08.md`.
+
+**Key difference:** KERN compresses Python's surface syntax and keeps Python's semantics, runtime and tests; toke is a separate compiled language with its own runtime and native binaries. Under TEMSpec, Kern-vs-Python numbers are same-tokenizer reductions of a re-encoding, Kern-vs-toke numbers are cross-language density ratios (informational), and neither project's correctness criterion (transpile-and-execute vs compile-natively-and-execute) applies to the other; the shared criterion for a joint benchmark is output equality on the same tests.
+
+### 6.9 Projects listed by KERN as comparators
+
+Transcribed from the KERN page and repository (fetched 2026-09-18) as they list them; not independently verified here.
+
+- **SimPy** (ISSTA 2024, arXiv 2404.16333): AST-compatible simplified Python subset with abbreviated keywords; ~20-30% token reduction on HumanEval; requires fine-tuning; research artefact without a production implementation.
+- **Token Sugar** (December 2025, arXiv 2512.08266): a "syntactic sugar" abbreviation layer over Python that expands back to standard Python; ~15-25% savings with few-shot prompting, no fine-tuning; rules are hand-maintained.
+- **Sigil 0.1.0** (PyPI `sigil-lang`): alpha compact language with a Python converter and compiler; KERN reports Kern 21.51% below Sigil on 1,682 programs and Sigil passing 4/542 EvalPlus tasks.
+- **KARN v1.0.0**: AI-agent language claiming 76% fewer tokens than Python; KERN reports the claim is not reproducible from public artefacts and measures Kern 2.19% below KARN on 46 matched executable pairs (46/46 both).
+- **NERD 3.0.0**: LLVM-backed "machine-authorship" language claiming 50-70% fewer tokens; KERN reports the counter is lexical rather than an LLM tokenizer and measures Kern 9.92% below NERD on 7 deterministic pairs.
+- **Vyxal 3.12.0**: stack-based code-golf language used by KERN as a density ceiling; 91 vs 151 cl100k tokens on 14 frontier programs (14/14 both), with Vyxal's one-byte code page scored separately.
+- Also named on the page: **LLMLingua** (prompt compression, 50-75%), and in the repository: Ax, zerolang, K, GolfScript, J, Pyth, Jelly, Uiua, BQN, GNU APL, CJam, Kona, Nibbles, Dyalog APL.
 
 ---
 
