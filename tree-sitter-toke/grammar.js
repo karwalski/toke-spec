@@ -4,8 +4,14 @@
  * v0.3 syntax uses lowercase keywords, $ type sigils, @() array literals,
  * and semicolons as separators. No square brackets in the language.
  *
- * Keywords (13): m, f, t, i, if, el, lp, br, let, mut, as, rt, mt
- * 55-char alphabet: lowercase a-z, 0-9, " ; : , . = + - * / % < > ! & | ( ) { } @ $ _ #
+ * This grammar targets v0.3. The language has 14 keywords —
+ * m, f, t, i, if, el, lp, br, let, mut, as, rt, mt, sc — and a closed 59-character
+ * alphabet: lowercase a-z (26), digits (10) and the symbols
+ * ! " $ % & ( ) * + - . / : ; < = > @ ^ { | } ~ (23), derived from src/lexer.c
+ * (toke/docs/metrics-baseline.md). The rules below cover only 13 of the keywords:
+ * `sc` (scope) is not implemented, and the comma, underscore and `#` this header used
+ * to list as members of the alphabet are rejected outside string literals (E1003).
+ * Both are part of the pending v0.4 pass. Corrected 2026-09-19, story 132.15.
  */
 
 module.exports = grammar({
