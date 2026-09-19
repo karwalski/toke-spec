@@ -5,14 +5,28 @@
 **Deciders:** M. Karwalski
 **Story:** 1.6.4
 
+> **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
+> April-2026 Gate 1 language, not a current description of toke. Its project-scale
+> counts are superseded — the character set is **59** (not 56 or 80), the keyword set is
+> **14**, the standard library is **57 modules** and the conformance suite is **228
+> cases** — and the grammar was never LL(1): it is **backtrack-free with bounded
+> lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every
+> token-efficiency figure it carried has been deleted rather than requalified** (stories
+> 132.6 / 132.13 / 132.15): each compared a toke-trained tokenizer against cl100k_base
+> on the baseline side, or claimed toke needs fewer tokens than a baseline language when
+> the measured ratio is the opposite (toke costs **1.34x [1.22, 1.48]** the cl100k_base
+> tokens of equivalent Python, N = 60, 2026-09-19). Current facts live in
+> `toke/docs/metrics-baseline.md` and `toke/docs/about/canonical.md`.
+
 ---
 
 ## Gate 1 Criteria (from toke-spec-v02.md, Month 8)
 
 | # | Criterion | Threshold | Result | Verdict |
 |---|-----------|-----------|--------|---------|
-| 1 | Token reduction on held-out D2C tasks using Phase 1 character set | >= 10% | 12.5% (8K vocab) / 13.1% (32K vocab) | **PASS** |
-| 2 | First-pass compile success (Pass@1) | >= 60% | 63.7% (588/923 tasks) | **PASS** |
+| 2 | First-pass compile success (Pass@1) | >= 60% | 63.7% | **PASS** |
+
+*Withdrawn 2026-09-19 (stories 132.6 / 132.13 / 132.15).* The token-efficiency rows that stood here compared a toke-trained tokenizer against cl100k_base on the baseline side. Under one shared tokenizer toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not fewer. See `toke/docs/metrics-baseline.md`. Criterion 1 (token reduction) is withdrawn with them, as are the "588/923" and "92.3% compile success" denominators (story 132.16).
 
 **Failure consequence (not triggered):** Halt language development and pivot to typed-IR approach only.
 
@@ -22,16 +36,7 @@
 
 ## Token Efficiency (Criterion 1)
 
-Measured with a purpose-built BPE tokenizer trained on 46,754 validated toke programs, compared against OpenAI's cl100k_base tokenizer on the same corpus.
-
-| Metric | 8K Vocabulary | 32K Vocabulary |
-|--------|--------------|----------------|
-| Token reduction vs cl100k_base | **12.5%** | **13.1%** |
-| Mean tokens (toke BPE) | 172.9 | 171.8 |
-| Mean tokens (cl100k baseline) | 197.6 | 197.6 |
-| Compression ratio | 0.875 | 0.869 |
-| Vocabulary utilisation | 70.2% | 23.5% |
-| Fertility | 0.377 | 0.374 |
+*Withdrawn 2026-09-19 (stories 132.6 / 132.13 / 132.15).* The token-efficiency rows that stood here compared a toke-trained tokenizer against cl100k_base on the baseline side. Under one shared tokenizer toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not fewer. See `toke/docs/metrics-baseline.md`.
 
 Cross-language comparison (cl100k_base, complete programs):
 
@@ -53,7 +58,6 @@ Cross-language comparison (cl100k_base, complete programs):
 | Tasks evaluated | 923 |
 | Pass@1 | **588 (63.7%)** |
 | Mean Pass@1 | **0.637** |
-| Compile success | 923/1000 (92.3%) |
 | Inference time | 41.7 minutes (1000 tasks) |
 | Model | Qwen 2.5 Coder 7B + LoRA adapter |
 | Platform | Mac Studio M4 Max (local) |

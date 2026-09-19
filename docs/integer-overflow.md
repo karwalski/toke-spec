@@ -5,6 +5,19 @@
 **Decision:** D2=E (checked by default, @wrapping opt-out)
 **Status:** Draft — extends toke-spec-v02.md Section 13 (Type System)
 
+> **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
+> v0.2-era language, not a current description of toke. Its project-scale counts are
+> superseded — the character set is **59** (not 56 or 80), the keyword set is **14**,
+> the standard library is **57 modules** and the conformance suite is **228 cases** —
+> and the grammar was never LL(1): it is **backtrack-free with bounded lookahead of up
+> to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every token-efficiency figure
+> it carried has been deleted rather than requalified** (stories 132.6 / 132.13 /
+> 132.15): each compared a toke-trained tokenizer against cl100k_base on the baseline
+> side, or claimed toke needs fewer tokens than a baseline language when the measured
+> ratio is the opposite (toke costs **1.34x [1.22, 1.48]** the cl100k_base tokens of
+> equivalent Python, N = 60, 2026-09-19). Current facts live in
+> `toke/docs/metrics-baseline.md` and `toke/docs/about/canonical.md`.
+
 ---
 
 ## 1. Default: Checked Arithmetic
@@ -129,7 +142,7 @@ Checked overflow (D2=E) was specified in this document on 2026-04-04 and impleme
 Consequently:
 
 - The Gate 1 Pass@1 result (63.7%) reflects unchecked arithmetic. No programs were rejected or trapped due to overflow.
-- The Gate 1 token-efficiency result (12.5% same-tokenizer reduction) is unaffected, since checked overflow does not change source-level token counts.
+- Token efficiency is unaffected either way, since checked overflow does not change source-level token counts. (The Gate 1 token-efficiency result this line used to quote is withdrawn — story 132.6.)
 - Future gates (Gate 2+) will measure the runtime overhead of checked arithmetic on the benchmark suite and report it alongside Pass@1. The expected overhead is 7-12% at `-O1`, decreasing at higher optimization levels (see Section 1.4).
 
 ---

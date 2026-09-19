@@ -5,6 +5,19 @@
 **Decision:** D3=D (hybrid arena + explicit allocator)
 **Status:** Draft — extends toke-spec-v02.md Section 15
 
+> **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
+> v0.2-era language, not a current description of toke. Its project-scale counts are
+> superseded — the character set is **59** (not 56 or 80), the keyword set is **14**,
+> the standard library is **57 modules** and the conformance suite is **228 cases** —
+> and the grammar was never LL(1): it is **backtrack-free with bounded lookahead of up
+> to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every token-efficiency figure
+> it carried has been deleted rather than requalified** (stories 132.6 / 132.13 /
+> 132.15): each compared a toke-trained tokenizer against cl100k_base on the baseline
+> side, or claimed toke needs fewer tokens than a baseline language when the measured
+> ratio is the opposite (toke costs **1.34x [1.22, 1.48]** the cl100k_base tokens of
+> equivalent Python, N = 60, 2026-09-19). Current facts live in
+> `toke/docs/metrics-baseline.md` and `toke/docs/about/canonical.md`.
+
 ---
 
 ## 1. Overview
@@ -145,7 +158,7 @@ Implications for Gate 1 results:
 
 - All 46,754 training corpus programs and all 1,000 benchmark tasks used arena-only allocation. No program required heap allocation, connection pools, or growing collections.
 - The Gate 1 workload (short algorithmic functions with bounded allocation) is entirely within the arena-supported pattern set (Section 2.1).
-- Pass@1 (63.7%) and token efficiency (12.5%) are valid measurements of the arena-only subset of the language.
+- Pass@1 (63.7%) is a valid measurement of the arena-only subset of the language. (The token-efficiency figure this line used to quote is withdrawn — story 132.6.)
 - The explicit allocator API will be implemented and evaluated in Phase 2. Gate 2+ benchmarks will include tasks that exercise heap allocation, ownership tracking, and escape analysis.
 
 ---

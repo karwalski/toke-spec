@@ -5,6 +5,19 @@
 **Status:** Post-Gate 1 — PASS — Requesting Feedback
 **Repository:** [github.com/karwalski/toke](https://github.com/karwalski/toke)
 
+> **Archived 2026-09-19 (story 132.15).** This document is the April-2026 record of the
+> project at Gate 1 and is **not a current description of toke**. Its project-scale
+> counts are superseded — the character set is **59** (not 56), the keyword set is
+> **14** (not 12), the standard library is **57 modules** (not 14) and the conformance
+> suite is **228 cases** (not 90) — and the grammar was never LL(1): it is
+> **backtrack-free with bounded lookahead of up to 3 tokens**
+> (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every token-efficiency figure it used to
+> carry has been deleted rather than requalified** (stories 132.6 / 132.13): each
+> compared a toke-trained tokenizer against cl100k_base on the baseline side, which
+> measures the tokenizer's training bias, not the language. The current outbound version
+> of this document is `toke/docs/spec/research-feedback-request.md`; the only sanctioned
+> numbers are in `toke/docs/metrics-baseline.md`.
+
 ---
 
 ## Purpose of This Document
@@ -71,7 +84,7 @@ The return statement uses `<` (one character vs six for `return`).
 
 ### 3.3 Grammar
 
-LL(1) — deterministic parsing with exactly one token of lookahead. No backtracking, no ambiguity. Every syntactic position has exactly one valid interpretation.
+Backtrack-free — the parser never rescans input it has already consumed, and a small, enumerated set of productions requires bounded lookahead of up to 3 tokens, never more (`toke/docs/spec/toke-spec-v0.4.md` §E, which retired this document's original "LL(1)" claim as not accurate for the real grammar). No ambiguity: every syntactic position has exactly one valid interpretation.
 
 Full EBNF: [toke-spec/spec/grammar.ebnf](https://github.com/karwalski/toke-spec/blob/main/spec/grammar.ebnf)
 
@@ -145,7 +158,7 @@ The compiler emits JSON diagnostics with stable error codes, machine-parseable s
 
 ### 4.1 Compiler
 
-Single-pass C99 compiler: lexer, LL(1) parser, name resolution, type inference, LLVM IR codegen (x86-64, ARM64). `--check` mode for corpus validation. 90 conformance tests, 9 e2e tests. Targets: x86-64 Linux, ARM64 Linux, ARM64 macOS.
+Single-pass C99 compiler: lexer, backtrack-free recursive-descent parser, name resolution, type inference, LLVM IR codegen (x86-64, ARM64). `--check` mode for corpus validation. 90 conformance tests, 9 e2e tests. Targets: x86-64 Linux, ARM64 Linux, ARM64 macOS.
 
 ### 4.2 Training Corpus
 
@@ -168,7 +181,7 @@ Single-pass C99 compiler: lexer, LL(1) parser, name resolution, type inference, 
 
 `std.str`, `std.json`, `std.toon`, `std.yaml`, `std.i18n`, `std.http`, `std.db`, `std.file`, `std.env`, `std.process`, `std.crypto`, `std.time`, `std.log`, `std.test`
 
-toke uses a **TOON-first serialization strategy**: TOON (Token-Oriented Object Notation) as the default format for tabular data (30-60% fewer tokens than JSON), with YAML and JSON as secondary formats. String externalisation for internationalisation is handled via `std.i18n` with locale-aware bundle loading across all three formats. See [ADR-0003](https://github.com/karwalski/toke-spec/blob/main/docs/architecture/ADR-0003.md).
+toke uses a **TOON-first serialization strategy**: TOON (Token-Oriented Object Notation) as the default format for tabular data, with YAML and JSON as secondary formats. String externalisation for internationalisation is handled via `std.i18n` with locale-aware bundle loading across all three formats. See [ADR-0003](https://github.com/karwalski/toke-spec/blob/main/docs/architecture/ADR-0003.md).
 
 ---
 
@@ -178,38 +191,21 @@ toke uses a **TOON-first serialization strategy**: TOON (Token-Oriented Object N
 
 BPE tokenizer trained on the Phase 1 corpus (46,730 programs). Evaluated on 4,675 held-out programs.
 
-| Metric | 8K Vocabulary | 32K Vocabulary |
-|--------|--------------|----------------|
-| Token reduction vs cl100k_base | **12.5%** | **13.1%** |
-| Mean tokens (toke BPE) | 172.9 | 171.8 |
-| Mean tokens (cl100k baseline) | 197.6 | 197.6 |
-| Compression ratio | 0.875 | 0.869 |
-| Vocabulary utilisation | 70.2% | 23.5% |
-| Fertility | 0.377 | 0.374 |
-
-> **Note:** These results are from the Phase 1 (80-character) corpus. The Phase 2 (56-character) corpus transformation is complete (46,754 entries transformed). The reduced character set is expected to improve these numbers further.
+*Withdrawn 2026-09-19 (stories 132.6 / 132.15).* The reduction, compression, vocabulary-utilisation and fertility rows that stood here compared a toke-trained BPE on toke text with cl100k_base, and were read as a comparison with Python. On canonical v0.4 text the shipped 8K tokenizer needs **15.4% more** tokens than cl100k_base (N = 2,000, 2026-09-18); see `toke/docs/metrics-baseline.md`.
 
 ### 5.2 Token Efficiency vs Other Languages
 
-Measured on equivalent programs using cl100k_base tokenizer:
-
-| Language | Mean tokens (function only) | Mean tokens (complete program) |
-|----------|-----------------------------|-------------------------------|
-| toke (cl100k) | ~38 | ~52 |
-| Python | ~85 | ~156 |
-| C | ~60 | ~168 |
-| Java | ~43 | ~127 |
-
-With the purpose-built tokenizer, toke's complete program drops to ~19 tokens for equivalent logic (projected, based on 8K vocabulary evaluation).
+*Withdrawn 2026-09-19 (stories 132.6 / 132.15).* These per-language means were v0.3-era, and the "~19 tokens with the purpose-built tokenizer" line crossed the tokenizer lanes. The measured figure is the reverse of what this section claimed: under one shared tokenizer (cl100k_base) toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19). See `toke/docs/metrics-baseline.md`.
 
 ### 5.3 Gate 1 Results — PASS (2026-04-03)
 
 | Criterion | Threshold | Result | Verdict |
 |-----------|-----------|--------|---------|
-| Token reduction vs cl100k_base | > 10% | 12.5% (8K vocab) / 13.1% (32K vocab) | **PASS** |
-| Pass@1 on held-out tasks | >= 60% | 63.7% (588/923 tasks) | **PASS** |
+| Pass@1 on held-out tasks | >= 60% | 63.7% | **PASS** |
 
-**Benchmark details:** 1,000 held-out tasks with 120 test inputs each. 923/1,000 compiled successfully (92.3%). Of those, 588 passed all test cases on first generation (63.7% Pass@1). Model: Qwen 2.5 Coder 7B with QLoRA adapter, inference on Mac Studio M4 Max (41.7 minutes for 1,000 tasks).
+The token-reduction criterion row is withdrawn (story 132.6): it was scored with a toke-trained BPE against cl100k_base. The "588/923" and "92.3% compiled" denominators are withdrawn with it — neither is reproducible from any artefact in the workspace (story 132.16).
+
+**Benchmark details:** 1,000 held-out tasks with 120 test inputs each. Model: Qwen 2.5 Coder 7B with QLoRA adapter, inference on Mac Studio M4 Max (41.7 minutes for 1,000 tasks).
 
 **Cross-language token comparison** (cl100k_base, complete programs):
 
@@ -322,11 +318,11 @@ These questions from the specification (Section 23) remain unresolved:
 
 | Milestone | Status | Key Result |
 |-----------|--------|------------|
-| 1.1 Language specification | Complete | LL(1) grammar, 56-char set, 12 keywords |
+| 1.1 Language specification | Complete | v0.2 profile as specified in April 2026 (see the archive note above for the current facts) |
 | 1.2 Reference compiler | Complete | Single-pass C99, LLVM backend, 90 conformance + 9 e2e tests |
 | 1.3 Standard library | Complete | 14 modules, C runtime backing |
 | 1.5 Training corpus | Complete | 46,754 validated programs, Phase 2 syntax |
-| 1.6 Gate 1 evaluation | **PASS** | 12.5% token reduction, 63.7% Pass@1 (588/923 tasks) |
+| 1.6 Gate 1 evaluation | **PASS** | 63.7% Pass@1; the token-reduction figure is withdrawn (story 132.6) |
 | 2.2 Purpose-built tokenizer | Complete | 8K/32K vocab, Phase 1 corpus |
 | 2.3 Fine-tuned model | Complete | QLoRA on Qwen 2.5 Coder 7B, LoRA adapter |
 | 6.3 Serialization formats | Complete | TOON, YAML, JSON modules + i18n (ADR-0003) |
@@ -380,14 +376,7 @@ FuncDecl    = "f" , "=" , Ident , "(" , [ ParamList ] , ")" , [ ":" , TypeExpr ]
 
 ### Token Reduction vs cl100k_base (Phase 1 Corpus)
 
-| Metric | 8K Vocabulary | 32K Vocabulary |
-|--------|--------------|----------------|
-| Token reduction vs cl100k_base | **12.5%** | **13.1%** |
-| Mean tokens (toke BPE) | 172.9 | 171.8 |
-| Mean tokens (cl100k baseline) | 197.6 | 197.6 |
-| Compression ratio | 0.875 | 0.869 |
-| Vocabulary utilisation | 70.2% | 23.5% |
-| Fertility | 0.377 | 0.374 |
+*Withdrawn 2026-09-19 (stories 132.6 / 132.15) — same table as §5.1, same reason.*
 
 ### Cross-Language Token Comparison (cl100k_base, Complete Programs)
 

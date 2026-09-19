@@ -51,10 +51,14 @@ archive of what the language used to be, not a description of what it is.
 | `examples/` | Example programs in the phase-1 and phase-2 profiles — historical syntax |
 | `tree-sitter-toke/` | Tree-sitter grammar; targets v0.3, v0.4 pass pending |
 
-## Two corrections that apply to every document in this archive
+## Corrections that apply to every document in this archive
 
-The documents here were written against the v0.3 specification and were not rewritten in
-place. Two of their claims are retired, and neither may be repeated:
+The documents here were written against the v0.2/v0.3 specifications and were not
+rewritten in place. Each one that states superseded facts now opens with a dated
+**Archived** banner naming them; the banner is machine-readable, and
+`toke/scripts/check_canonical.py` and `toke/scripts/check_metrics_claims.py` are run
+across this repository by `make check-claims-all` in the toke repo (story 132.15). These
+claims are retired, and none may be repeated:
 
 - **toke is not LL(1).** `toke-spec-v0.4.md` §E retired that claim on 2026-07-02: it was
   not accurate for the real grammar. The verified property is that the parser never
@@ -62,6 +66,19 @@ place. Two of their claims are retired, and neither may be repeated:
   require bounded lookahead of up to 3 tokens, never more.
 - **The keyword count is 14, not 13.** §A fixes the set at `m i t f let if el lp br rt as
   mt sc mut`, verified against the lexer keyword table.
+- **The character set is 59, not 55, 56 or 80.** Story 132.14 derived it from `src/lexer.c`
+  — 26 lowercase + 10 digits + 23 symbols — and both normative documents were wrong in
+  different directions. The "56-character" and "80-character" profiles named throughout
+  this archive are the v0.2/v0.3-era branding.
+- **Every token-efficiency figure in this archive is withdrawn.** "12.5% reduction vs
+  Python", "2.5-4x fewer tokens", "63.0% / 73.5% / 84.9% fewer tokens than Python / Java /
+  C" and the vocabulary-utilisation and fertility figures each compared a toke-trained
+  tokenizer against cl100k_base on the baseline side, or claimed a direction the data does
+  not support. Story 132.15 deleted them here rather than requalifying them. TEMSpec §6.2
+  (`docs/temspec.md`) now *prohibits* the lane crossing it used to sanction. The measured
+  position: under one shared tokenizer (cl100k_base) toke costs **1.34x [1.22, 1.48]** the
+  tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not
+  fewer. `toke/docs/metrics-baseline.md` is the only source for toke numbers.
 
 ## Related repositories
 

@@ -5,6 +5,19 @@
 This file is the normative interface for the toke standard library.
 Changes here require coordinated updates to toke-stdlib and toke-benchmark.
 
+> **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
+> v0.3-era stdlib language, not a current description of toke. Its project-scale counts
+> are superseded — the character set is **59** (not 56 or 80), the keyword set is
+> **14**, the standard library is **57 modules** and the conformance suite is **228
+> cases** — and the grammar was never LL(1): it is **backtrack-free with bounded
+> lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every
+> token-efficiency figure it carried has been deleted rather than requalified** (stories
+> 132.6 / 132.13 / 132.15): each compared a toke-trained tokenizer against cl100k_base
+> on the baseline side, or claimed toke needs fewer tokens than a baseline language when
+> the measured ratio is the opposite (toke costs **1.34x [1.22, 1.48]** the cl100k_base
+> tokens of equivalent Python, N = 60, 2026-09-19). Current facts live in
+> `toke/docs/metrics-baseline.md` and `toke/docs/about/canonical.md`.
+
 ## Modules
 
 - `std.str` — string operations (len, concat, slice, split, case, encoding)
@@ -24,7 +37,7 @@ Changes here require coordinated updates to toke-stdlib and toke-benchmark.
 
 ## Serialization Strategy
 
-toke uses a **TOON-first serialization strategy**: TOON for tabular data (30-60% fewer tokens than JSON), YAML and JSON as secondary formats. String externalisation for internationalisation via `std.i18n`. See [ADR-0003](../docs/architecture/ADR-0003.md).
+toke uses a **TOON-first serialization strategy**: TOON for tabular data, YAML and JSON as secondary formats. String externalisation for internationalisation via `std.i18n`. See [ADR-0003](../docs/architecture/ADR-0003.md).
 
 ## Function Signatures
 

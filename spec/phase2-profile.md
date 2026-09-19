@@ -11,6 +11,14 @@
 **Spec version:** 0.2
 **Supersedes:** toke-spec-v02.md Section 8 (which described Phase 2 as a secondary profile)
 
+> **Archived 2026-09-19 (story 132.15).** This document is a dated record of the frozen
+> v0.2 phase-2 profile language, not a current description of toke. Its project-scale
+> counts are superseded — the character set is **59** (not 56 or 80), the keyword set is
+> **14**, the standard library is **57 modules** and the conformance suite is **228
+> cases** — and the grammar was never LL(1): it is **backtrack-free with bounded
+> lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). Current facts
+> live in `toke/docs/metrics-baseline.md` and `toke/docs/about/canonical.md`.
+
 ---
 
 ## 1. Profile Status [N]

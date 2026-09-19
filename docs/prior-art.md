@@ -8,13 +8,24 @@
 > v0.2-era language (56-character alphabet, 12 keywords) and described the grammar as
 > **LL(1)**. Both descriptors are corrected in place below. The authoritative facts are
 > `toke/docs/spec/toke-spec-v0.4.md`: **14 keywords** (`m i t f let if el lp br rt as mt sc
-> mut`, §A), a **55-character** set, and a grammar that is **backtrack-free** — the parser
+> mut`, §A), a **59-character** set, and a grammar that is **backtrack-free** — the parser
 > never rescans consumed input — with an **enumerated** set of productions requiring
 > **bounded lookahead of up to 3 tokens** (§E, 2026-07-02; FIRST-sets in Appendix A of
 > `grammar.ebnf`). The strict-LL(1) claim "was **not accurate** for the real grammar".
 > Nothing in the argument below depends on the label: a small backtrack-free grammar with
 > bounded lookahead is still cheap to constrain during decoding and cheap to parse. The
 > canonical description of toke lives in `toke/docs/about/canonical.md`.
+>
+> **Second editor's note, 2026-09-19 (story 132.15).** Every token-efficiency figure this
+> document carried has been **deleted, not requalified**: "12.5% fewer tokens than Python",
+> "2.5-4x fewer tokens when comparing toke-bpe against cl100k", the cross-language density
+> rows and the vocabulary-utilisation figures all measured a *toke-trained* tokenizer on the
+> toke side against cl100k on the baseline side, which measures the tokenizer's training
+> bias and not the language (story 132.13). The sanctioned wording, and the only sanctioned
+> numbers, are in `toke/docs/metrics-baseline.md`: under one shared tokenizer (cl100k_base)
+> toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks
+> (N = 60, 2026-09-19) — more, not fewer. Project-scale counts (59 characters, 14 keywords,
+> 57 stdlib modules) come from the same file's "Project facts" table.
 
 ---
 
@@ -45,7 +56,7 @@ Human-readable (designed for human authors first) vs machine-optimized (designed
 
 | System | Axis A | Axis B | Notes |
 |--------|--------|--------|-------|
-| **toke** | New language | Machine-optimised | 55-char alphabet, 14 keywords, backtrack-free grammar with bounded lookahead, designed for LLM code generation |
+| **toke** | New language | Machine-optimised | 59-char alphabet, 14 keywords, backtrack-free grammar with bounded lookahead, designed for LLM code generation |
 | **Zig** | New language | Human-readable | Designed for human systems programmers; comptime is a human productivity feature |
 | **Odin** | New language | Human-readable | Explicit simplicity for human authors; no AI-specific design goals |
 | **MoonBit** | New language | Between | Claims "AI-friendly" design but retains full human-readable syntax |
@@ -66,7 +77,7 @@ Human-readable (designed for human authors first) vs machine-optimized (designed
 
 | Language/Tool | Token Density | Pass@1 | Compilation Target | Safety Model | Ecosystem Maturity | AI-Specific Design |
 |--------------|---------------|--------|-------------------|-------------|-------------------|-------------------|
-| **toke** | 12.5% reduction vs Python (cl100k); 2.5-4x cross-language | 63.7% (Qwen 2.5 Coder 7B) | LLVM IR -> native (x86-64, ARM64) | Static types, error unions, no null | Phase 1 complete; 14 stdlib modules; 46K training programs | Yes: 55-char alphabet, backtrack-free grammar, single-token keywords, compiler-in-the-loop training |
+| **toke** | Costs **1.34x [1.22, 1.48]** the cl100k_base tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not fewer; see `toke/docs/metrics-baseline.md` | 63.7% (Qwen 2.5 Coder 7B, Gate 1) | LLVM IR -> native (x86-64, ARM64) | Static types, error unions, no null | 57 stdlib modules; 23,382 frozen v0.4 corpus records | Yes: 59-char alphabet, backtrack-free grammar, single-token keywords, compiler-in-the-loop training |
 | **Zig** | No published data; expected similar to C [citation needed] | No published LLM Pass@1 data [citation needed] | LLVM IR -> native; also self-hosted backend | comptime safety, no hidden control flow, no hidden allocations, optional safety checks | Mature; large community; package manager; extensive stdlib | No |
 | **Odin** | No published data [citation needed] | No published LLM Pass@1 data [citation needed] | LLVM IR -> native | Explicit allocators, bounds checking, no hidden control flow | Growing; ~100+ packages; used in production at JangaFX [citation needed] | No |
 | **MoonBit** | Claims "AI-friendly" but no published token density comparisons [citation needed] | No published LLM Pass@1 data [citation needed] | Wasm, JS backend | Algebraic types, pattern matching, ownership | Early; stdlib under development; IDE tooling | Partial: claims AI-friendly design; details unclear |
@@ -93,9 +104,9 @@ Rows for SimPy, Token Sugar, Sigil, KARN, NERD and Vyxal are transcribed from KE
 
 ### 3.1 Character set control enables structural guarantees impossible with constrained decoding alone
 
-toke's 56-character ASCII alphabet is not an arbitrary restriction --- it is a design choice that produces measurable downstream effects:
+toke's 59-character ASCII alphabet is not an arbitrary restriction --- it is a design choice that produces measurable downstream effects:
 
-- **Tokenizer alignment.** Fewer unique characters mean fewer possible byte-pair merges. A BPE tokenizer trained on toke source achieves fertility of 0.374 (tokens per character), meaning common multi-character sequences merge into single tokens more consistently. Standard languages with 95+ printable ASCII characters fragment tokenizer vocabulary across rarely-used symbols.
+- **Tokenizer alignment.** Fewer unique characters mean fewer possible byte-pair merges, so common multi-character sequences merge into single tokens more consistently. Standard languages with 95+ printable ASCII characters fragment tokenizer vocabulary across rarely-used symbols. (The v0.3-era fertility and vocabulary-utilisation figures that used to appear here are withdrawn: no toke tokenizer currently beats cl100k_base on canonical v0.4 text — see `toke/docs/metrics-baseline.md`.)
 
 - **Deterministic parsing.** The restricted character set, combined with a backtrack-free grammar (bounded lookahead of up to 3 tokens on an enumerated set of productions), means every character position has a single valid interpretation. There is no ambiguity about whether `<` is a comparison operator, a generic type parameter, or an XML tag. In toke, `<` is the return operator --- always.
 
@@ -103,13 +114,11 @@ toke's 56-character ASCII alphabet is not an arbitrary restriction --- it is a d
 
 Constrained decoding on existing languages can enforce grammar rules, but it cannot change the alphabet. A Python program will always contain uppercase letters, backticks, backslashes, tildes, and other characters that consume tokenizer vocabulary entries even when they appear rarely.
 
-### 3.2 A 56-character alphabet eliminates tokenizer waste from rarely-used symbols
+### 3.2 A closed 59-character alphabet eliminates tokenizer waste from rarely-used symbols
 
 Standard tokenizers (cl100k_base, Llama 3 tokenizer) allocate vocabulary entries to character sequences that appear in natural language, markdown, HTML, and dozens of programming languages. When generating code in any single language, most of this vocabulary is wasted.
 
-toke's approach is different: the language is designed so that a purpose-built tokenizer can achieve high vocabulary utilisation. The toke-bpe-8k tokenizer achieves 70.2% vocabulary utilisation on the evaluation corpus, compared to typical utilisations of 10-30% for general-purpose tokenizers on single-language code [citation needed].
-
-The result: 12.5% fewer tokens than Python on the same tokenizer (cl100k_base), and 2.5-4x fewer tokens when comparing toke-bpe against cl100k on equivalent programs.
+toke's approach is different: the language is designed so that a purpose-built tokenizer *could* achieve high vocabulary utilisation on a single language. That is a design rationale, not a result: no shipped toke tokenizer currently beats cl100k_base on canonical v0.4 text (the 8K SentencePiece needs 15.4% more tokens, N = 2,000, 2026-09-18), and no such claim is supportable until the v0.4 tokenizer is trained and locked (story 116.9).
 
 ### 3.3 Compiler-in-the-loop training creates a virtuous cycle
 
@@ -155,11 +164,11 @@ Measured impact:
 
 toke's strategy operates at two levels:
 
-1. **Language design** (Phase 1, completed): 55-character alphabet, single-character declaration keywords, a backtrack-free grammar, sigil-based type system. This reduces the number of characters and structural tokens needed to express a program.
+1. **Language design** (Phase 1, completed): 59-character alphabet, single-character declaration keywords, a backtrack-free grammar, sigil-based type system. This reduces the number of characters and structural tokens needed to express a program.
 
 2. **Constrained decoding** (D12=C ablation study, planned): toke's small backtrack-free grammar is specifically designed to be expressible as a context-free grammar suitable for constrained-decoding frameworks. A future ablation study (D12=C in the spec) will measure the additional benefit of layering grammar-constrained decoding on top of the already-compact language.
 
-The hypothesis: combining both approaches will yield greater token reduction than either alone. Language design provides the floor (12.5% reduction even on a general-purpose tokenizer not designed for toke). Constrained decoding can provide additional gains by eliminating syntactically invalid token sequences during generation.
+The hypothesis: combining both approaches will yield greater token reduction than either alone. Constrained decoding can provide additional gains by eliminating syntactically invalid token sequences during generation.
 
 ### 4.3 Constrained decoding does not provide compilation or semantic feedback
 
@@ -181,7 +190,7 @@ toke's compiler-in-the-loop approach catches all of these. The two approaches ar
 
 **Mitigation:**
 - toke is a *code generation target*, not a general-purpose human programming language. The primary "developer" is an LLM, which does not need Stack Overflow.
-- 14 standard library modules cover the core functionality needed for the benchmark tasks (string manipulation, JSON, HTTP, file I/O, etc.).
+- The standard library (57 modules) covers the core functionality needed for the benchmark tasks (string manipulation, JSON, HTTP, file I/O, etc.).
 - C FFI enables calling into existing C libraries when needed.
 - The compiler emits LLVM IR, enabling integration with the LLVM ecosystem for optimisation and cross-compilation.
 
@@ -190,7 +199,7 @@ toke's compiler-in-the-loop approach catches all of these. The two approaches ar
 **Risk:** LLMs are trained on billions of tokens of Python, JavaScript, C, and Java. A new language has zero tokens in any pre-training corpus. This is a cold-start problem.
 
 **Mitigation:**
-- Phase 1 demonstrated that a 7B parameter model (Qwen 2.5 Coder) can be fine-tuned with LoRA on 46,754 toke programs to achieve 63.7% Pass@1 on held-out tasks. The cold-start problem is real but surmountable with targeted fine-tuning.
+- Phase 1 demonstrated that a 7B parameter model (Qwen 2.5 Coder) can be fine-tuned with LoRA on the v0.2-era corpus of 46,754 toke programs (2026-04-01) to achieve 63.7% Pass@1 on held-out tasks. The cold-start problem is real but surmountable with targeted fine-tuning.
 - toke's syntax borrows structural patterns from C, Rust, and Go (curly braces, semicolons, type annotations). Models with pre-training on these languages transfer syntactic intuitions to toke.
 - The training corpus is generated via multi-model pipeline (Claude, GPT, Grok) with differential testing, providing diversity that mitigates overfitting to any single model's style.
 - Corpus scaling is planned for Phase 2: larger programs, more domains, more diverse algorithmic patterns.
@@ -248,7 +257,7 @@ MoonBit is a programming language designed for WebAssembly, featuring pattern ma
 
 **Relevance to toke:** MoonBit is the closest comparator in intent --- it explicitly considers AI as a use case. However, MoonBit's "AI-friendly" claims appear to focus on IDE integration and AI-assisted development (AI helping human programmers write MoonBit) rather than on making MoonBit a generation target for AI (AI generating MoonBit as output) [citation needed]. No published token density measurements or LLM Pass@1 benchmarks for MoonBit are available.
 
-**Key difference:** MoonBit retains human-readable syntax and a full character set. toke's restricted 56-character alphabet and single-character keywords represent a more radical optimisation for machine generation.
+**Key difference:** MoonBit retains human-readable syntax and a full character set. toke's restricted 59-character alphabet and single-character keywords represent a more radical optimisation for machine generation.
 
 ### 6.4 ShortCoder
 
@@ -306,16 +315,17 @@ For full details, see [gate1-decision.md](gate1-decision.md).
 
 | Metric | Value |
 |--------|-------|
-| Token reduction (cl100k_base, vs Python) | 12.5% (8K vocab) / 13.1% (32K vocab) |
-| Cross-language density (vs Python) | 3.0x fewer tokens |
-| Cross-language density (vs C) | 3.2x fewer tokens |
-| Cross-language density (vs Java) | 2.4x fewer tokens |
-| Pass@1 | 63.7% (588/923 tasks) |
-| Compile success | 92.3% (923/1000 tasks) |
+| Pass@1 | 63.7% (Qwen 2.5 Coder 7B + LoRA, held-out tasks) |
 | Model | Qwen 2.5 Coder 7B + LoRA |
-| Training corpus | 46,754 validated programs |
-| Tokenizer fertility | 0.374 (toke-bpe-32k) |
-| Vocabulary utilisation | 70.2% (8K) / 23.5% (32K) |
+| Training corpus | 46,754 validated programs (v0.2-era, 2026-04-01) |
+
+Every token-efficiency row this table used to carry — token reduction vs Python, the
+cross-language density multiples, tokenizer fertility and vocabulary utilisation — was
+deleted on 2026-09-19 (stories 132.6 / 132.13 / 132.15): each compared a toke-trained
+tokenizer against cl100k on the baseline side. The Pass@1 denominators ("588/923") and the
+"92.3% compile success" rate were deleted with them; neither is reproducible from any
+artefact in the workspace (story 132.16). `toke/docs/metrics-baseline.md` is the only
+source for what toke has actually measured.
 
 ---
 

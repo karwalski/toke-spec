@@ -5,6 +5,14 @@
 **Audience:** Research review teams T1-T8
 **Syntax profile:** 56-character default
 
+> **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
+> v0.2-era 56-character language, not a current description of toke. Its project-scale
+> counts are superseded — the character set is **59** (not 56 or 80), the keyword set is
+> **14**, the standard library is **57 modules** and the conformance suite is **228
+> cases** — and the grammar was never LL(1): it is **backtrack-free with bounded
+> lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). Current facts
+> live in `toke/docs/metrics-baseline.md` and `toke/docs/about/canonical.md`.
+
 ---
 
 ## Purpose

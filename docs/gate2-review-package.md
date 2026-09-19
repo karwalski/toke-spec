@@ -5,6 +5,19 @@
 **Review window:** 2 weeks (closes 2026-04-18)
 **Prepared for:** Research review teams T1-T8
 
+> **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
+> April-2026 v0.2-profile language, not a current description of toke. Its project-scale
+> counts are superseded — the character set is **59** (not 56 or 80), the keyword set is
+> **14**, the standard library is **57 modules** and the conformance suite is **228
+> cases** — and the grammar was never LL(1): it is **backtrack-free with bounded
+> lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every
+> token-efficiency figure it carried has been deleted rather than requalified** (stories
+> 132.6 / 132.13 / 132.15): each compared a toke-trained tokenizer against cl100k_base
+> on the baseline side, or claimed toke needs fewer tokens than a baseline language when
+> the measured ratio is the opposite (toke costs **1.34x [1.22, 1.48]** the cl100k_base
+> tokens of equivalent Python, N = 60, 2026-09-19). Current facts live in
+> `toke/docs/metrics-baseline.md` and `toke/docs/about/canonical.md`.
+
 ---
 
 ## 1. Executive Summary
@@ -76,20 +89,11 @@ f=sum_squares(a:@i64):i64{
 
 ### 3.1 Token Efficiency
 
-| Comparison | Reduction | Evidence |
-|------------|-----------|---------|
-| toke vs Python | **63.0%** fewer tokens | cl100k_base tokenizer, 3,886 verified program pairs |
-| toke vs Java | **73.5%** fewer tokens | Same methodology |
-| toke vs C | **84.9%** fewer tokens | Same methodology |
-| **Mean reduction** | **73.8%** | Across all three languages |
-
-toke programs average 75.6 tokens (cl100k_base) compared to Python's 204.0 tokens for equivalent functionality. The median toke program is 68 tokens; p95 is 140 tokens.
-
-**Gate 1 baseline for reference:** 12.5% token reduction (tokenizer-level, custom SentencePiece vs cl100k_base on toke source). Gate 2 measures language-level reduction (toke source vs equivalent programs in other languages, all tokenized with cl100k_base). These are complementary metrics.
+*Withdrawn 2026-09-19 (stories 132.6 / 132.15).* This section published "63.0% fewer tokens than Python", "73.5% vs Java", "84.9% vs C" and a "73.8% mean reduction", plus a "12.5% Gate 1 baseline". The direction is wrong, not just the qualifiers: re-measured under one shared tokenizer on hand-written v0.4 text, toke costs **1.34x [1.22, 1.48]** the cl100k_base tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not fewer. The per-language mean-token figures went with them. `toke/docs/metrics-baseline.md` is the only source.
 
 ### 3.2 Unambiguous Grammar
 
-The grammar is **LL(1)**: the parser never requires more than one token of lookahead. Every construct is deterministic from its first token:
+The grammar is **backtrack-free**: the parser never rescans input it has already consumed, and a small, enumerated set of productions requires bounded lookahead of up to 3 tokens, never more (`toke/docs/spec/toke-spec-v0.4.md` §E retired this document's original "LL(1)" claim as not accurate for the real grammar). Every construct is deterministic from its first token:
 
 - `$` always begins a type reference
 - `@(` always begins an array or map literal
@@ -106,7 +110,6 @@ The 56-character printable ASCII subset was chosen to maximise compatibility wit
 - All characters are in the printable ASCII range (no Unicode structural syntax)
 - No whitespace-sensitive grammar (indentation does not affect parsing)
 - Frequent co-occurring patterns (`$str`, `$i64`, `@(`, `f=`) are designed to merge into single BPE tokens after retraining
-- Expected 2.5-4x improvement in LLM token density vs cl100k_base after purpose-built tokenizer retraining
 
 ### 3.4 Learnability
 

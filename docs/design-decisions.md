@@ -4,6 +4,19 @@
 **Status:** Gate 2 review companion document
 **Audience:** Research review teams T1-T8
 
+> **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
+> v0.2-era 56-character language, not a current description of toke. Its project-scale
+> counts are superseded — the character set is **59** (not 56 or 80), the keyword set is
+> **14**, the standard library is **57 modules** and the conformance suite is **228
+> cases** — and the grammar was never LL(1): it is **backtrack-free with bounded
+> lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every
+> token-efficiency figure it carried has been deleted rather than requalified** (stories
+> 132.6 / 132.13 / 132.15): each compared a toke-trained tokenizer against cl100k_base
+> on the baseline side, or claimed toke needs fewer tokens than a baseline language when
+> the measured ratio is the opposite (toke costs **1.34x [1.22, 1.48]** the cl100k_base
+> tokens of equivalent Python, N = 60, 2026-09-19). Current facts live in
+> `toke/docs/metrics-baseline.md` and `toke/docs/about/canonical.md`.
+
 ---
 
 ## Purpose
@@ -301,7 +314,7 @@ The following table shows every syntax change between the 80-character legacy pr
 
 **Net effect on character set:** 80 characters reduced to 56 (-24 characters removed from the alphabet). The per-expression overhead of longer syntax (e.g., `.get()` vs `[]`) is offset by the tokenizer-level gains from a smaller, more predictable character set.
 
-**Net effect on token efficiency:** The Gate 2 evaluation measures 63.0% fewer tokens than equivalent Python programs and 73.8% mean reduction across Python, Java, and C -- all using the cl100k_base tokenizer. With the purpose-built toke tokenizer, further gains of 2.5-4x are projected from BPE merges on high-frequency patterns like `$str`, `@(`, `f=`, and `.get(`.
+**Net effect on token efficiency:** *Withdrawn 2026-09-19 (stories 132.6 / 132.15).* The "63.0% fewer tokens than Python", "73.8% mean reduction" and "2.5-4x further gains" figures that stood here are not supportable in either direction: under one shared tokenizer toke costs **1.34x [1.22, 1.48]** the cl100k_base tokens of equivalent Python (N = 60, 2026-09-19), and no shipped toke tokenizer beats cl100k_base on canonical v0.4 text. The design argument for the smaller alphabet does not rest on those numbers — see `toke/docs/metrics-baseline.md`.
 
 ---
 

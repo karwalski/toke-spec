@@ -1,8 +1,18 @@
 # Token Efficiency Measurement Specification (TEMSpec)
 
-**Version:** 1.0
-**Date:** 2026-04-03
+**Version:** 1.1
+**Date:** 2026-04-03 (amended 2026-09-19, story 132.15)
 **Status:** Normative
+
+> **Amendment, 2026-09-19 (stories 132.13 / 132.15).** §6.2 of version 1.0 sanctioned
+> reporting a *toke-trained* tokenizer on the toke side against cl100k_base on the
+> baseline side as a "total stack benefit". That is a methodology error — it measures the
+> tokenizer's training bias, not the language — and it is the error behind the withdrawn
+> "42% reduction vs Python" and "2.5-4x fewer tokens" claims. §6.2 is now a prohibition:
+> **any cross-language number uses one tokenizer on both sides.** §8's Gate 1 record is
+> withdrawn for the same reason. The measured position is in
+> `toke/docs/metrics-baseline.md`: under cl100k_base, toke costs **1.34x [1.22, 1.48]**
+> the tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19).
 
 ---
 
@@ -30,7 +40,7 @@ token_reduction(tokenizer, task) = 1 - (tokens_toke / tokens_baseline)
 
 - **tokens_toke**: token count of the toke solution for a task, tokenized by `tokenizer`
 - **tokens_baseline**: token count of the reference solution (Python by default) for the same task, tokenized by the same `tokenizer`
-- **Reported as**: percentage (e.g., "12.5% reduction")
+- **Reported as**: percentage, with its sign (e.g., "-34% reduction", i.e. toke is longer)
 - **Aggregation**: arithmetic mean of per-task reductions; also report median and trimmed mean (5% trim)
 - **Sign convention**: positive = toke is shorter; negative = toke is longer
 
@@ -42,18 +52,18 @@ Ratio of total toke tokens to total baseline tokens across a corpus.
 compression_ratio = sum(tokens_toke) / sum(tokens_baseline)
 ```
 
-- A compression ratio of 0.875 corresponds to a 12.5% token reduction
+- A compression ratio of 1.34 means toke costs 34% more tokens than the baseline; that is the current measured value against Python with cl100k_base on both sides (N = 60, `toke/docs/metrics-baseline.md`)
 - This is a corpus-level aggregate, not a per-task metric
 
 ### 2.3 Cross-Language Token Density
 
-Compares toke token counts against other languages (Python, C, Java) using a shared tokenizer. This is the metric behind claims like "2.5-4x fewer tokens."
+Compares toke token counts against other languages (Python, C, Java) using **one shared tokenizer applied to both sides**. Applying a toke-trained tokenizer to the toke side and a general-purpose tokenizer to the baseline side is not this metric and is not a valid measurement of anything (§6.2).
 
 ```
 density_ratio(tokenizer, lang, task) = tokens_lang / tokens_toke
 ```
 
-- **Reported as**: ratio (e.g., "3.2x fewer tokens than Python")
+- **Reported as**: ratio in the direction measured (e.g., "1.34x the tokens of equivalent Python")
 - **Aggregation**: geometric mean of per-task ratios (geometric mean is appropriate for ratios)
 - **Caveat**: this compares different source languages, not different tokenizers
 
@@ -178,19 +188,22 @@ The project makes two distinct types of efficiency claims. They measure differen
 
 ### 6.1 Same-Tokenizer Reduction (Gate Metric)
 
-"12.5% token reduction vs cl100k_base" means: toke programs require 12.5% fewer tokens than equivalent Python programs when both are tokenized by cl100k_base.
+"X% token reduction vs cl100k_base" means: toke programs require X% fewer tokens than equivalent programs in the baseline language when **both** are tokenized by cl100k_base. The sign is part of the number: the current measured value is negative (toke costs 1.34x [1.22, 1.48] the cl100k_base tokens of equivalent Python, N = 60, 2026-09-19).
 
 - This is the **gate metric** used for pass/fail decisions
 - It measures the benefit of toke's syntax design
 - It is conservative: cl100k_base was not designed for toke
 
-### 6.2 Cross-Language Token Density (Informational)
+### 6.2 Never Cross the Tokenizer Lanes (normative prohibition)
 
-"2.5-4x fewer tokens" means: toke programs tokenized by the toke-specific BPE tokenizer produce 2.5-4x fewer tokens than equivalent Python programs tokenized by cl100k_base.
+A tokenizer trained on toke text (Toke-16K, `tokenizer_v03`, `proxy8k`, the toke
+SentencePiece models) MUST NOT be applied to the toke side of a cross-language
+comparison whose baseline side uses a different tokenizer. Such a figure measures the
+tokenizer's training bias, not the language, and MUST NOT be published.
 
-- This combines two advantages: syntax design + purpose-built tokenizer
-- It represents the **total stack benefit** when using toke end-to-end
-- It is NOT used for gate pass/fail decisions
+- Version 1.0 of this document described exactly that combination as a "total stack benefit"; it was wrong, and it is the methodology error behind the withdrawn "42% reduction vs Python" and "2.5-4x fewer tokens" claims (story 132.13)
+- Any cross-language number uses **one** tokenizer on both sides (§2.3)
+- A tokenizer-vs-tokenizer comparison is legitimate only on **identical text**: same toke source, two tokenizers, reported as such
 
 ### 6.3 Reporting Requirement
 
@@ -248,14 +261,12 @@ This section records how TEMSpec was applied during the Gate 1 evaluation (2026-
 | Total toke tokens | 87,903 |
 | Mean tokens per task | 87.9 |
 | Median tokens per task | 73.0 |
-| Same-tokenizer reduction | **12.5%** (toke vs Python, both via cl100k_base) |
-| Compression ratio | 0.875 |
+
+*The reduction and compression-ratio rows are withdrawn (2026-09-19, stories 132.6 / 132.15): the Gate 1 "12.5%" was scored with a purpose-built 8K BPE on toke text against cl100k_base, not with one tokenizer on both sides as §6.1 requires.*
 
 ### 8.2 Metric Type
 
-The Gate 1 headline figure (12.5%) is a **same-tokenizer reduction** (Section 6.1). Both toke and Python programs were tokenized by `cl100k_base`. This is the conservative gate metric that measures syntax design benefit alone.
-
-The cross-language density figures (2.4-3.2x, Section 6.2) were reported separately in the gate decision document and use the toke-specific BPE tokenizer on the toke side vs cl100k_base on the Python/C/Java side.
+The Gate 1 headline figure was published as a same-tokenizer reduction (§6.1) but was not one, and the cross-language density figures reported alongside it in the gate decision document used the toke-specific BPE on the toke side against cl100k_base on the Python/C/Java side — the crossing §6.2 now prohibits. Both are withdrawn. Re-measured under one shared tokenizer on hand-written v0.4 text, toke costs **1.34x [1.22, 1.48]** the cl100k_base tokens of equivalent Python (N = 60, 2026-09-19); see `toke/docs/metrics-baseline.md`.
 
 ### 8.3 Conformance
 
