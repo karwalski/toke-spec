@@ -4,6 +4,18 @@
 **Status:** Draft
 **Story:** 10.9.1
 
+> **Editor's note, 2026-09-19 (story 132.12).** This document was written against the
+> v0.2-era language (56-character alphabet, 12 keywords) and described the grammar as
+> **LL(1)**. Both descriptors are corrected in place below. The authoritative facts are
+> `toke/docs/spec/toke-spec-v0.4.md`: **14 keywords** (`m i t f let if el lp br rt as mt sc
+> mut`, §A), a **55-character** set, and a grammar that is **backtrack-free** — the parser
+> never rescans consumed input — with an **enumerated** set of productions requiring
+> **bounded lookahead of up to 3 tokens** (§E, 2026-07-02; FIRST-sets in Appendix A of
+> `grammar.ebnf`). The strict-LL(1) claim "was **not accurate** for the real grammar".
+> Nothing in the argument below depends on the label: a small backtrack-free grammar with
+> bounded lookahead is still cheap to constrain during decoding and cheap to parse. The
+> canonical description of toke lives in `toke/docs/about/canonical.md`.
+
 ---
 
 ## 1. Design Space
@@ -33,7 +45,7 @@ Human-readable (designed for human authors first) vs machine-optimized (designed
 
 | System | Axis A | Axis B | Notes |
 |--------|--------|--------|-------|
-| **toke** | New language | Machine-optimised | 56-char alphabet, 12 keywords, LL(1) grammar designed for LLM token efficiency |
+| **toke** | New language | Machine-optimised | 55-char alphabet, 14 keywords, backtrack-free grammar with bounded lookahead, designed for LLM code generation |
 | **Zig** | New language | Human-readable | Designed for human systems programmers; comptime is a human productivity feature |
 | **Odin** | New language | Human-readable | Explicit simplicity for human authors; no AI-specific design goals |
 | **MoonBit** | New language | Between | Claims "AI-friendly" design but retains full human-readable syntax |
@@ -54,7 +66,7 @@ Human-readable (designed for human authors first) vs machine-optimized (designed
 
 | Language/Tool | Token Density | Pass@1 | Compilation Target | Safety Model | Ecosystem Maturity | AI-Specific Design |
 |--------------|---------------|--------|-------------------|-------------|-------------------|-------------------|
-| **toke** | 12.5% reduction vs Python (cl100k); 2.5-4x cross-language | 63.7% (Qwen 2.5 Coder 7B) | LLVM IR -> native (x86-64, ARM64) | Static types, error unions, no null | Phase 1 complete; 14 stdlib modules; 46K training programs | Yes: 56-char alphabet, LL(1) grammar, single-token keywords, compiler-in-the-loop training |
+| **toke** | 12.5% reduction vs Python (cl100k); 2.5-4x cross-language | 63.7% (Qwen 2.5 Coder 7B) | LLVM IR -> native (x86-64, ARM64) | Static types, error unions, no null | Phase 1 complete; 14 stdlib modules; 46K training programs | Yes: 55-char alphabet, backtrack-free grammar, single-token keywords, compiler-in-the-loop training |
 | **Zig** | No published data; expected similar to C [citation needed] | No published LLM Pass@1 data [citation needed] | LLVM IR -> native; also self-hosted backend | comptime safety, no hidden control flow, no hidden allocations, optional safety checks | Mature; large community; package manager; extensive stdlib | No |
 | **Odin** | No published data [citation needed] | No published LLM Pass@1 data [citation needed] | LLVM IR -> native | Explicit allocators, bounds checking, no hidden control flow | Growing; ~100+ packages; used in production at JangaFX [citation needed] | No |
 | **MoonBit** | Claims "AI-friendly" but no published token density comparisons [citation needed] | No published LLM Pass@1 data [citation needed] | Wasm, JS backend | Algebraic types, pattern matching, ownership | Early; stdlib under development; IDE tooling | Partial: claims AI-friendly design; details unclear |
@@ -85,7 +97,7 @@ toke's 56-character ASCII alphabet is not an arbitrary restriction --- it is a d
 
 - **Tokenizer alignment.** Fewer unique characters mean fewer possible byte-pair merges. A BPE tokenizer trained on toke source achieves fertility of 0.374 (tokens per character), meaning common multi-character sequences merge into single tokens more consistently. Standard languages with 95+ printable ASCII characters fragment tokenizer vocabulary across rarely-used symbols.
 
-- **Deterministic parsing.** The restricted character set, combined with LL(1) grammar design, means every character position has a single valid interpretation. There is no ambiguity about whether `<` is a comparison operator, a generic type parameter, or an XML tag. In toke, `<` is the return operator --- always.
+- **Deterministic parsing.** The restricted character set, combined with a backtrack-free grammar (bounded lookahead of up to 3 tokens on an enumerated set of productions), means every character position has a single valid interpretation. There is no ambiguity about whether `<` is a comparison operator, a generic type parameter, or an XML tag. In toke, `<` is the return operator --- always.
 
 - **Training signal density.** When the character set is fixed and small, every character the model generates carries more information. There are no wasted probability mass on characters that never appear in valid programs.
 
@@ -143,9 +155,9 @@ Measured impact:
 
 toke's strategy operates at two levels:
 
-1. **Language design** (Phase 1, completed): 56-character alphabet, single-character keywords, LL(1) grammar, sigil-based type system. This reduces the number of characters and structural tokens needed to express a program.
+1. **Language design** (Phase 1, completed): 55-character alphabet, single-character declaration keywords, a backtrack-free grammar, sigil-based type system. This reduces the number of characters and structural tokens needed to express a program.
 
-2. **Constrained decoding** (D12=C ablation study, planned): toke's LL(1) grammar is specifically designed to be expressible as a context-free grammar suitable for constrained-decoding frameworks. A future ablation study (D12=C in the spec) will measure the additional benefit of layering grammar-constrained decoding on top of the already-compact language.
+2. **Constrained decoding** (D12=C ablation study, planned): toke's small backtrack-free grammar is specifically designed to be expressible as a context-free grammar suitable for constrained-decoding frameworks. A future ablation study (D12=C in the spec) will measure the additional benefit of layering grammar-constrained decoding on top of the already-compact language.
 
 The hypothesis: combining both approaches will yield greater token reduction than either alone. Language design provides the floor (12.5% reduction even on a general-purpose tokenizer not designed for toke). Constrained decoding can provide additional gains by eliminating syntactically invalid token sequences during generation.
 
@@ -198,7 +210,7 @@ toke's compiler-in-the-loop approach catches all of these. The two approaches ar
 
 **Mitigation:**
 - The project uses explicit go/no-go gates with falsification criteria. Gate 1 required >= 10% token reduction and >= 60% Pass@1. Both were met. If a future gate fails, the spec defines a pivot to typed-IR approach.
-- The compiler, standard library, and training infrastructure are modular. Lessons learned (LL(1) grammar design, structured diagnostics, compiler-in-the-loop training) transfer to other projects even if toke itself does not proceed.
+- The compiler, standard library, and training infrastructure are modular. Lessons learned (small backtrack-free grammar design, structured diagnostics, compiler-in-the-loop training) transfer to other projects even if toke itself does not proceed.
 
 ### 5.5 Evaluation methodology risk
 
@@ -250,7 +262,7 @@ ShortCoder is a research project exploring constrained decoding strategies to pr
 
 XGrammar is a grammar-constrained decoding library developed by the MLC-AI team. It enables LLMs to generate output that conforms to a specified context-free grammar (CFG) or regular expression, with efficient token masking during generation [citation needed].
 
-**Relevance to toke:** XGrammar demonstrates that grammar-constrained decoding is practical and efficient. toke's LL(1) grammar was designed to be expressible as a CFG, making it compatible with XGrammar-style constrained decoding. The D12=C ablation study in toke's spec plans to measure the benefit of layering XGrammar-style constraints on top of toke's language design.
+**Relevance to toke:** XGrammar demonstrates that grammar-constrained decoding is practical and efficient. toke's small backtrack-free grammar was designed to be expressible as a CFG, making it compatible with XGrammar-style constrained decoding. The D12=C ablation study in toke's spec plans to measure the benefit of layering XGrammar-style constraints on top of toke's language design.
 
 **Key difference:** XGrammar ensures syntactic validity but does not reduce the token count of valid programs. toke reduces token counts through language design and can additionally use XGrammar-style decoding for syntactic guarantees.
 
