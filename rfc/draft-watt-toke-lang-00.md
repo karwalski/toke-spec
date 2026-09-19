@@ -1890,7 +1890,12 @@ Table of Contents
    o  Training: QLoRA fine-tune of Qwen 2.5 Coder 7B Instruct
       completed (eval loss 0.158, 73K training examples, 1 epoch).
    o  Benchmark: 1,000 held-out test tasks (120 inputs each).
-      Gate 1 result: 63.7% Pass@1 (588/923 compilable tasks).
+      Gate 1 result: 58.8% Pass@1 (588 passed / 1,000 generated).
+      Published as 63.7% (588/923 compilable tasks) until
+      2026-09-19; that denominator dropped the 77 generated
+      solutions that failed to compile, which measures Pass@1
+      given that the solution compiled, not Pass@1.  See
+      Section 22 and docs/gate1-decision.md.
 
    Go/No-Go Gate 1 (Month 8):
       tk shows greater than 10% token reduction AND equal or better
@@ -2131,7 +2136,7 @@ Table of Contents
    -----------------------   -----------   ----------   ----------   ------
    Token efficiency          12.5% better  Baseline     Baseline     Gate 1 PASS
    First-pass compile (LLM)  92.3%         High         Medium       1000 tasks
-   Pass@1 (held-out)         63.7%         N/A          N/A          Gate 1 PASS
+   Pass@1 (held-out)         58.8%         N/A          N/A          see note
    Repair iterations         Measuring     Medium       Medium       Phase 2
    End-to-end gen. cost      Measuring     Medium       Medium       Phase 2
    Binary performance        Native        Interpreted  Native       LLVM
@@ -2145,10 +2150,28 @@ Table of Contents
 ```
 
    Gate 1 results: Token reduction 12.5% (8K vocab) / 13.1% (32K
-   vocab) vs cl100k_base.  Pass@1 63.7% (588/923 compilable tasks)
-   on 1,000 held-out benchmark tasks using Qwen 2.5 Coder 7B with
-   QLoRA adapter.  Both criteria exceeded the required thresholds
-   (>10% token reduction AND >=60% Pass@1).
+   vocab) vs cl100k_base.  Pass@1 58.8% (588 of 1,000 generated
+   solutions) on 1,000 held-out benchmark tasks using Qwen 2.5
+   Coder 7B with QLoRA adapter.
+
+   Pass@1 correction (2026-09-19).  This figure was published as
+   63.7% until that date.  1,000 solutions were generated, 923
+   compiled, and 588 passed every hidden test.  The published
+   63.7% was 588/923: the evaluation harness dropped every
+   solution that failed to compile out of the denominator, so it
+   measured Pass@1 given that the solution compiled -- a different
+   and strictly more generous quantity.  A solution that fails to
+   compile is a failed attempt, not an absent one, so the
+   denominator is the 1,000 solutions generated: 588/1,000 =
+   58.8%.  No re-evaluation was performed; the correction is
+   arithmetic over artefacts already on disk.
+
+   58.8% is BELOW the >=60% Pass@1 threshold this gate declared.
+   The token-reduction criterion was met (12.5% > 10%); the Pass@1
+   criterion was not.  The Gate 1 verdict recorded on 2026-04-03
+   is therefore RE-OPENED and has not been re-decided.  The
+   original claim that both criteria were exceeded is retained
+   above the correction as the record of what was asserted.
 
    Full Gate 1 decision document: docs/gate1-decision.md
 
@@ -2235,9 +2258,16 @@ Table of Contents
    M1 through M6 were completed ahead of schedule.  The 7B fine-tune
    (M6) was completed using QLoRA via Apple MLX on the development
    profile corpus (73K training examples, eval loss 0.158).  Gate 1
-   evaluation completed 2026-04-03: PASS.  Token reduction 12.5%
-   (threshold >10%), Pass@1 63.7% (threshold >=60%) on 1,000 held-out
-   tasks.  The project proceeds to Phase 2 (Language Extensions).
+   evaluation completed 2026-04-03 and was recorded as PASS: token
+   reduction 12.5% (threshold >10%), Pass@1 63.7% (threshold >=60%)
+   on 1,000 held-out tasks.  The project proceeded to Phase 2
+   (Language Extensions).
+
+   That Pass@1 was corrected on 2026-09-19 to 58.8% (588 of 1,000
+   generated solutions); 63.7% was 588/923, computed after
+   non-compiling solutions had been dropped from the denominator.
+   58.8% is below the >=60% threshold, so the Gate 1 verdict is
+   re-opened and has not been re-decided.  See Section 22.
 
 ---
 

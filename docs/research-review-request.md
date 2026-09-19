@@ -197,11 +197,26 @@ BPE tokenizer trained on the Phase 1 corpus (46,730 programs). Evaluated on 4,67
 
 *Withdrawn 2026-09-19 (stories 132.6 / 132.15).* These per-language means were v0.3-era, and the "~19 tokens with the purpose-built tokenizer" line crossed the tokenizer lanes. The measured figure is the reverse of what this section claimed: under one shared tokenizer (cl100k_base) toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19). See `toke/docs/metrics-baseline.md`.
 
-### 5.3 Gate 1 Results — PASS (2026-04-03)
+### 5.3 Gate 1 Results — verdict RE-OPENED 2026-09-19 (run 2026-04-03)
 
 | Criterion | Threshold | Result | Verdict |
 |-----------|-----------|--------|---------|
-| Pass@1 on held-out tasks | >= 60% | 63.7% | **PASS** |
+| Pass@1 on held-out tasks | >= 60% | **58.8%** (588/1,000) | **NOT MET — open** |
+
+> **Pass@1 corrected 2026-09-19 (story 128.19): 58.8%, not 63.7%.**
+> 1,000 solutions were generated, 923 compiled, 588 passed every hidden test. The
+> figure published as 63.7% was 588/**923**: `load_toke_solutions()` dropped the 77
+> solutions that failed to compile out of the denominator, so it measured Pass@1
+> *given that the solution compiled* — a different and strictly more generous
+> quantity. A solution that fails to compile is a failed attempt, not an absent
+> one, so the denominator is the 1,000 generated: 588/1,000 = **58.8%**. No re-run
+> was needed; the correction is arithmetic over `toke-eval/benchmark/solutions/*.toke`.
+> **58.8% is below the declared `pass_at_1_minimum: 0.60`, so the Gate 1 verdict is
+> re-opened and has not been re-decided here.** Derivation:
+> `toke-eval/docs/suspect-numbers-128-1c.md` §1.
+
+Recorded as PASS on 2026-04-03 against the withdrawn 63.7% figure; that verdict
+is left in the record and has not been re-decided here.
 
 The token-reduction criterion row is withdrawn (story 132.6): it was scored with a toke-trained BPE against cl100k_base. The "588/923" and "92.3% compiled" denominators are withdrawn with it — neither is reproducible from any artefact in the workspace (story 132.16).
 
@@ -322,7 +337,7 @@ These questions from the specification (Section 23) remain unresolved:
 | 1.2 Reference compiler | Complete | Single-pass C99, LLVM backend, 90 conformance + 9 e2e tests |
 | 1.3 Standard library | Complete | 14 modules, C runtime backing |
 | 1.5 Training corpus | Complete | 46,754 validated programs, Phase 2 syntax |
-| 1.6 Gate 1 evaluation | **PASS** | 63.7% Pass@1; the token-reduction figure is withdrawn (story 132.6) |
+| 1.6 Gate 1 evaluation | **OPEN** (recorded PASS 2026-04-03) | **58.8%** Pass@1 (588/1,000) — below the >= 60% threshold; published as 63.7% until the denominator was corrected on 2026-09-19 (story 128.19). The token-reduction figure is withdrawn (story 132.6) |
 | 2.2 Purpose-built tokenizer | Complete | 8K/32K vocab, Phase 1 corpus |
 | 2.3 Fine-tuned model | Complete | QLoRA on Qwen 2.5 Coder 7B, LoRA adapter |
 | 6.3 Serialization formats | Complete | TOON, YAML, JSON modules + i18n (ADR-0003) |

@@ -141,7 +141,7 @@ Checked overflow (D2=E) was specified in this document on 2026-04-04 and impleme
 
 Consequently:
 
-- The Gate 1 Pass@1 result (63.7%) reflects unchecked arithmetic. No programs were rejected or trapped due to overflow.
+- The Gate 1 Pass@1 result (58.8%; 63.7% as published until 2026-09-19, corrected under story 128.19 — see `toke-spec/docs/gate1-decision.md`) reflects unchecked arithmetic. No programs were rejected or trapped due to overflow.
 - Token efficiency is unaffected either way, since checked overflow does not change source-level token counts. (The Gate 1 token-efficiency result this line used to quote is withdrawn — story 132.6.)
 - Future gates (Gate 2+) will measure the runtime overhead of checked arithmetic on the benchmark suite and report it alongside Pass@1. The expected overhead is 7-12% at `-O1`, decreasing at higher optimization levels (see Section 1.4).
 

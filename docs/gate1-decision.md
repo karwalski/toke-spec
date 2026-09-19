@@ -24,13 +24,35 @@
 
 | # | Criterion | Threshold | Result | Verdict |
 |---|-----------|-----------|--------|---------|
-| 2 | First-pass compile success (Pass@1) | >= 60% | 63.7% | **PASS** |
+| 2 | Functional Pass@1 on held-out tasks | >= 60% | **58.8%** (588/1,000) | **NOT MET — open** |
+
+> **Pass@1 corrected 2026-09-19 (story 128.19): 58.8%, not 63.7%.**
+> 1,000 solutions were generated, 923 compiled, 588 passed every hidden test. The
+> figure published as 63.7% was 588/**923**: `load_toke_solutions()` dropped the 77
+> solutions that failed to compile out of the denominator, so it measured Pass@1
+> *given that the solution compiled* — a different and strictly more generous
+> quantity. A solution that fails to compile is a failed attempt, not an absent
+> one, so the denominator is the 1,000 generated: 588/1,000 = **58.8%**. No re-run
+> was needed; the correction is arithmetic over `toke-eval/benchmark/solutions/*.toke`.
+> **58.8% is below the declared `pass_at_1_minimum: 0.60`, so the Gate 1 verdict is
+> re-opened and has not been re-decided here.** Derivation:
+> `toke-eval/docs/suspect-numbers-128-1c.md` §1.
+
+(The criterion was also mislabelled "first-pass compile success". 58.8% is the
+*functional* Pass@1 — solutions passing every hidden test. The compile rate was
+92.3%, 923/1,000.)
 
 *Withdrawn 2026-09-19 (stories 132.6 / 132.13 / 132.15).* The token-efficiency rows that stood here compared a toke-trained tokenizer against cl100k_base on the baseline side. Under one shared tokenizer toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not fewer. See `toke/docs/metrics-baseline.md`. Criterion 1 (token reduction) is withdrawn with them, as are the "588/923" and "92.3% compile success" denominators (story 132.16).
 
 **Failure consequence (not triggered):** Halt language development and pivot to typed-IR approach only.
 
-**Decision: Gate 1 passes. Phase 1 (Falsification) is complete. The project proceeds to Phase 2.**
+**Decision as recorded 2026-04-03: Gate 1 passes. Phase 1 (Falsification) is complete. The project proceeds to Phase 2.**
+
+**Re-opened 2026-09-19 (story 128.19).** That decision rested on a Pass@1 of
+63.7%, which was computed on the wrong denominator. The corrected figure, 58.8%,
+is below the gate's own >= 60% threshold. Whether Gate 1 passes on the corrected
+number is the owner's decision and is **not** made here. The original decision is
+left above as the record of what was concluded at the time.
 
 ---
 
@@ -55,9 +77,12 @@ Cross-language comparison (cl100k_base, complete programs):
 
 | Metric | Value |
 |--------|-------|
-| Tasks evaluated | 923 |
-| Pass@1 | **588 (63.7%)** |
-| Mean Pass@1 | **0.637** |
+| Solutions generated | 1,000 |
+| Solutions compiled | 923 (92.3%) |
+| Solutions passing every hidden test | 588 |
+| Pass@1 | **588/1,000 = 58.8%** |
+| Mean Pass@1 | **0.588** |
+| Pass@1 as published until 2026-09-19 | 588/923 = 63.7% — **withdrawn, wrong denominator** |
 | Inference time | 41.7 minutes (1000 tasks) |
 | Model | Qwen 2.5 Coder 7B + LoRA adapter |
 | Platform | Mac Studio M4 Max (local) |
@@ -69,7 +94,13 @@ Cross-language comparison (cl100k_base, complete programs):
 | v1 | 2026-04-03 | 500 | 183 (37%) | 153 (31%) | Baseline |
 | v2 | 2026-04-03 | 500 | 293 (59%) | 217 (43%) | String globals + loop SSA + ptr tracking |
 | v3 | 2026-04-03 | 500 | 435 (87%) | 312 (62%) | Bool print + nested JSON + i1 coercion |
-| v5 (final) | 2026-04-03 | 1000 | 923 (92%) | 588 (64%) | 500 new diverse tasks, full re-inference |
+| v5 (final) | 2026-04-03 | 1000 | 923 (92%) | 588 (**59%**) | 500 new diverse tasks, full re-inference |
+
+The v5 row read `588 (64%)` until 2026-09-19. Note that every other row in this
+table computes its Pass@1 percentage against the **generated** count in the Tasks
+column — 153/500 = 31%, 217/500 = 43%, 312/500 = 62% — and only the v5 row was
+computed against the *compiled* count (588/923 = 64%). The corrected v5 figure,
+588/1000 = 59%, is the one consistent with the rest of its own table.
 
 ### Codegen Fixes Applied (Epic 2.8)
 

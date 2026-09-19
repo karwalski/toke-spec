@@ -4,7 +4,24 @@
 **Gate 1 Decision:** PASS (2026-04-03)
 **Story:** 10.1.4
 
-This document bundles everything needed to independently reproduce the Gate 1 evaluation results: Pass@1 = 63.7%. The token-reduction result and the "588/923" denominator are withdrawn (stories 132.6 / 132.16) and are not reproduced here.
+This document bundles everything needed to independently reproduce the Gate 1 evaluation results: Pass@1 = **58.8%** (588 passed / 1,000 generated). The token-reduction result is withdrawn (story 132.6) and is not reproduced here.
+
+> **Pass@1 corrected 2026-09-19 (story 128.19): 58.8%, not 63.7%.**
+> 1,000 solutions were generated, 923 compiled, 588 passed every hidden test. The
+> figure published as 63.7% was 588/**923**: `load_toke_solutions()` dropped the 77
+> solutions that failed to compile out of the denominator, so it measured Pass@1
+> *given that the solution compiled* — a different and strictly more generous
+> quantity. A solution that fails to compile is a failed attempt, not an absent
+> one, so the denominator is the 1,000 generated: 588/1,000 = **58.8%**. No re-run
+> was needed; the correction is arithmetic over `toke-eval/benchmark/solutions/*.toke`.
+> **58.8% is below the declared `pass_at_1_minimum: 0.60`, so the Gate 1 verdict is
+> re-opened and has not been re-decided here.** Derivation:
+> `toke-eval/docs/suspect-numbers-128-1c.md` §1.
+
+The "588/923" denominator is not merely unreproducible — it is wrong, and the
+number it should be replaced by is recoverable by arithmetic from artefacts
+already on disk. (Story 132.16 recorded it as withdrawn-because-unreproducible;
+story 128.19 supersedes that with the derivation above.)
 
 > **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
 > April-2026 Gate 1 language, not a current description of toke. Its project-scale
@@ -306,7 +323,10 @@ python -m toke_eval.pass_at_k \
     --timeout 10
 
 # 9. Verify results
-# Expected: Pass@1 >= 60% (588/923 = 63.7% in original run)
+# Expected: Pass@1 = 58.8% (588 passed / 1000 generated in original run).
+#           This is BELOW the >= 60% gate threshold; see the correction note
+#           at the top of this document. 588/923 = 63.7% was the published
+#           figure and used the wrong denominator.
 # Token reduction >= 10% vs cl100k_base
 ```
 
@@ -316,8 +336,8 @@ python -m toke_eval.pass_at_k \
 ============================================================
   Tasks:     1000
   Compiled:  923/1000
-  Pass@1:    588/923
-  Mean:      0.6371
+  Pass@1:    588/1000
+  Mean:      0.5880
   Duration:  ~2500s
 ============================================================
 ```

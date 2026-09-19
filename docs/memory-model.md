@@ -158,7 +158,7 @@ Implications for Gate 1 results:
 
 - All 46,754 training corpus programs and all 1,000 benchmark tasks used arena-only allocation. No program required heap allocation, connection pools, or growing collections.
 - The Gate 1 workload (short algorithmic functions with bounded allocation) is entirely within the arena-supported pattern set (Section 2.1).
-- Pass@1 (63.7%) is a valid measurement of the arena-only subset of the language. (The token-efficiency figure this line used to quote is withdrawn — story 132.6.)
+- Pass@1 (58.8%) is a valid measurement of the arena-only subset of the language. (This line quoted 63.7% until 2026-09-19; that figure used the compiled set, not the generated set, as its denominator — corrected under story 128.19, see `toke-spec/docs/gate1-decision.md`. The token-efficiency figure this line used to quote is withdrawn — story 132.6.)
 - The explicit allocator API will be implemented and evaluated in Phase 2. Gate 2+ benchmarks will include tasks that exercise heap allocation, ownership tracking, and escape analysis.
 
 ---

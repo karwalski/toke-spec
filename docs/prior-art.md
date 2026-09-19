@@ -77,7 +77,7 @@ Human-readable (designed for human authors first) vs machine-optimized (designed
 
 | Language/Tool | Token Density | Pass@1 | Compilation Target | Safety Model | Ecosystem Maturity | AI-Specific Design |
 |--------------|---------------|--------|-------------------|-------------|-------------------|-------------------|
-| **toke** | Costs **1.34x [1.22, 1.48]** the cl100k_base tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not fewer; see `toke/docs/metrics-baseline.md` | 63.7% (Qwen 2.5 Coder 7B, Gate 1) | LLVM IR -> native (x86-64, ARM64) | Static types, error unions, no null | 57 stdlib modules; 23,382 frozen v0.4 corpus records | Yes: 59-char alphabet, backtrack-free grammar, single-token keywords, compiler-in-the-loop training |
+| **toke** | Costs **1.34x [1.22, 1.48]** the cl100k_base tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not fewer; see `toke/docs/metrics-baseline.md` | 58.8% (Qwen 2.5 Coder 7B, Gate 1; 588/1,000) | LLVM IR -> native (x86-64, ARM64) | Static types, error unions, no null | 57 stdlib modules; 23,382 frozen v0.4 corpus records | Yes: 59-char alphabet, backtrack-free grammar, single-token keywords, compiler-in-the-loop training |
 | **Zig** | No published data; expected similar to C [citation needed] | No published LLM Pass@1 data [citation needed] | LLVM IR -> native; also self-hosted backend | comptime safety, no hidden control flow, no hidden allocations, optional safety checks | Mature; large community; package manager; extensive stdlib | No |
 | **Odin** | No published data [citation needed] | No published LLM Pass@1 data [citation needed] | LLVM IR -> native | Explicit allocators, bounds checking, no hidden control flow | Growing; ~100+ packages; used in production at JangaFX [citation needed] | No |
 | **MoonBit** | Claims "AI-friendly" but no published token density comparisons [citation needed] | No published LLM Pass@1 data [citation needed] | Wasm, JS backend | Algebraic types, pattern matching, ownership | Early; stdlib under development; IDE tooling | Partial: claims AI-friendly design; details unclear |
@@ -199,7 +199,7 @@ toke's compiler-in-the-loop approach catches all of these. The two approaches ar
 **Risk:** LLMs are trained on billions of tokens of Python, JavaScript, C, and Java. A new language has zero tokens in any pre-training corpus. This is a cold-start problem.
 
 **Mitigation:**
-- Phase 1 demonstrated that a 7B parameter model (Qwen 2.5 Coder) can be fine-tuned with LoRA on the v0.2-era corpus of 46,754 toke programs (2026-04-01) to achieve 63.7% Pass@1 on held-out tasks. The cold-start problem is real but surmountable with targeted fine-tuning.
+- Phase 1 demonstrated that a 7B parameter model (Qwen 2.5 Coder) can be fine-tuned with LoRA on the v0.2-era corpus of 46,754 toke programs (2026-04-01) to achieve 58.8% Pass@1 on held-out tasks (588 of 1,000 generated; published as 63.7% until 2026-09-19, when the denominator was corrected under story 128.19). The cold-start problem is real but surmountable with targeted fine-tuning.
 - toke's syntax borrows structural patterns from C, Rust, and Go (curly braces, semicolons, type annotations). Models with pre-training on these languages transfer syntactic intuitions to toke.
 - The training corpus is generated via multi-model pipeline (Claude, GPT, Grok) with differential testing, providing diversity that mitigates overfitting to any single model's style.
 - Corpus scaling is planned for Phase 2: larger programs, more domains, more diverse algorithmic patterns.
@@ -209,7 +209,7 @@ toke's compiler-in-the-loop approach catches all of these. The two approaches ar
 **Risk:** Without millions of human-written toke programs, model quality may plateau below that of models generating Python or JavaScript.
 
 **Mitigation:**
-- Gate 1 Pass@1 of 63.7% with a 7B model is already competitive with early code generation benchmarks on established languages [citation needed]. Phase 2 plans include larger base models and expanded training data.
+- Gate 1 Pass@1 of 58.8% with a 7B model (588/1,000; this claim previously quoted 63.7%, corrected under story 128.19) is in the range of early code generation benchmarks on established languages [citation needed]. Phase 2 plans include larger base models and expanded training data.
 - The compiler-in-the-loop training pipeline enables automated corpus generation at scale. The bottleneck is not human programmers writing toke --- it is LLMs generating and compilers validating toke programs.
 - toke's restricted syntax may actually *help* small models: fewer valid syntactic forms means less probability mass wasted on syntactic variations. The model can focus on algorithmic correctness rather than syntax choices.
 
@@ -315,16 +315,22 @@ For full details, see [gate1-decision.md](gate1-decision.md).
 
 | Metric | Value |
 |--------|-------|
-| Pass@1 | 63.7% (Qwen 2.5 Coder 7B + LoRA, held-out tasks) |
+| Pass@1 | **58.8%** (588 passed / 1,000 generated; Qwen 2.5 Coder 7B + LoRA, held-out tasks) |
 | Model | Qwen 2.5 Coder 7B + LoRA |
 | Training corpus | 46,754 validated programs (v0.2-era, 2026-04-01) |
 
 Every token-efficiency row this table used to carry — token reduction vs Python, the
 cross-language density multiples, tokenizer fertility and vocabulary utilisation — was
 deleted on 2026-09-19 (stories 132.6 / 132.13 / 132.15): each compared a toke-trained
-tokenizer against cl100k on the baseline side. The Pass@1 denominators ("588/923") and the
-"92.3% compile success" rate were deleted with them; neither is reproducible from any
-artefact in the workspace (story 132.16). `toke/docs/metrics-baseline.md` is the only
+tokenizer against cl100k on the baseline side. The "92.3% compile success" rate was
+deleted with them (story 132.16).
+
+The Pass@1 denominator is a separate matter and was corrected, not deleted, on
+2026-09-19 (story 128.19): "588/923" was **wrong**, not merely unreproducible.
+1,000 solutions were generated and the 77 that failed to compile were dropped
+from the denominator, making 63.7% a Pass@1 *given that the solution compiled*.
+The Pass@1 is 588/1,000 = **58.8%**, below the gate's own >= 60% threshold, and
+the Gate 1 verdict is re-opened. See `gate1-decision.md`. `toke/docs/metrics-baseline.md` is the only
 source for what toke has actually measured.
 
 ---

@@ -17,11 +17,26 @@
 
 ---
 
-## Gate 1 (Completed — PASS 2026-04-03)
+## Gate 1 (Run 2026-04-03 — verdict RE-OPENED 2026-09-19)
 
 | Criterion | Threshold | Measured | Status |
 |-----------|-----------|----------|--------|
-| Pass@1 on held-out tasks | >= 60% | 63.7% | PASS |
+| Pass@1 on held-out tasks | >= 60% | **58.8%** (588/1,000) | **NOT MET — verdict open** |
+
+> **Pass@1 corrected 2026-09-19 (story 128.19): 58.8%, not 63.7%.**
+> 1,000 solutions were generated, 923 compiled, 588 passed every hidden test. The
+> figure published as 63.7% was 588/**923**: `load_toke_solutions()` dropped the 77
+> solutions that failed to compile out of the denominator, so it measured Pass@1
+> *given that the solution compiled* — a different and strictly more generous
+> quantity. A solution that fails to compile is a failed attempt, not an absent
+> one, so the denominator is the 1,000 generated: 588/1,000 = **58.8%**. No re-run
+> was needed; the correction is arithmetic over `toke-eval/benchmark/solutions/*.toke`.
+> **58.8% is below the declared `pass_at_1_minimum: 0.60`, so the Gate 1 verdict is
+> re-opened and has not been re-decided here.** Derivation:
+> `toke-eval/docs/suspect-numbers-128-1c.md` §1.
+
+Recorded as PASS on 2026-04-03 against the withdrawn 63.7% figure. That verdict
+stands in the historical record and has not been re-decided here.
 
 *Withdrawn 2026-09-19 (stories 132.6 / 132.13 / 132.15).* The token-efficiency rows that stood here compared a toke-trained tokenizer against cl100k_base on the baseline side. Under one shared tokenizer toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not fewer. See `toke/docs/metrics-baseline.md`. The "588/923 compiled" denominator went with it: it is not reproducible from any artefact in the workspace (story 132.16).
 
