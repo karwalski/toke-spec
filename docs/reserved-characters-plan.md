@@ -132,13 +132,26 @@ Type parameters use `$t` (existing type sigil) inside existing parentheses. No n
 
 ### Closures / Lambdas
 
+> **Hypothetical syntax — neither line below compiles on any release of toke
+> (checked against 2.8.0, 2026-09-22; story 136.52).** This section illustrates
+> that the reserved character set has *room* for closures, not that closures
+> exist. Two things in it are not real: the inline anonymous-function
+> expression `f(x:i64):i64{…}` is a parse error in expression position
+> (E2002, *expected ')', got ':'*), and the module-style `arr.map(…)`
+> spelling is not implemented — it is
+> rejected at `--check` with E4027 (there is no `tk_array_map_w` symbol in the
+> runtime). Today you pass a named function by reference to the **receiver**
+> form instead, which does work: `f=dbl(x:i64):i64{<x*2};` then `a.map(&dbl)`.
+> See `toke/docs/reference/combinator-status.md`.
+
 ```
+// PROPOSED ONLY — does not compile today
 // Anonymous function using existing f + braces
 let sq = f(x:i64):i64{<x * x;};
 let mapped = arr.map(f(x:i64):i64{<x * 2;});
 ```
 
-Anonymous functions reuse the `f` keyword and existing brace/parenthesis syntax. No new delimiter required.
+Were anonymous functions added, they could reuse the `f` keyword and existing brace/parenthesis syntax. No new delimiter would be required — which is the only claim this section is making.
 
 ### Async / Await
 
