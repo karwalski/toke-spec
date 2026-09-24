@@ -130,7 +130,7 @@ toke's reference compiler (`tkc`) was designed alongside the language to serve a
 4. **Train** on validated programs, using compiler errors as negative signal
 5. **Repeat** with improved model
 
-This loop produced 46,754 validated training programs across 4 stages, with 3-language differential testing. The compiler is not an afterthought; it is an integral part of the training pipeline.
+This loop produced the v0.2-era corpus of 2026-04-01: 46,754 validated training programs across 4 stages, with 3-language differential testing. The current v0.4 corpus is 23,382 audited records (`toke/docs/metrics-baseline.md` § Project facts). The compiler is not an afterthought; it is an integral part of the training pipeline.
 
 Constrained decoding cannot provide this feedback loop. XGrammar and Outlines ensure syntactic validity at generation time, but they cannot verify semantic correctness, type safety, or runtime behavior. toke's compiler provides all of these.
 

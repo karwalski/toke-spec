@@ -378,7 +378,7 @@ module.exports = grammar({
     // Identifiers
     // ================================================================
 
-    // v0.3: all lowercase, no uppercase letters in the 55-char alphabet
+    // lowercase only: no uppercase letters in the 59-char default alphabet (toke-spec-v0.4 §G)
     identifier: ($) => /[a-z_][a-z0-9_]*/,
 
     // ================================================================
