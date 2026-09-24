@@ -2,6 +2,12 @@
 
 **Status:** Normative supplement to toke-spec-v02.md Section 7.3 and Section 9.6.
 
+> **Editor's note, 2026-09-24 (story 132.67).** Written against the v0.2 spec. "Phase 1"
+> is today's legacy profile (86 characters) and "Phase 2" the default profile (59
+> characters, `toke/docs/spec/toke-spec-v0.4.md` §G). §G counts `"` as one of the 59, so
+> §1's statement that `"` is not a structural character is superseded. The escape table
+> in §3 still matches the lexer (`toke/src/lexer.c`).
+
 ## 1. String Literal Delimiters
 
 String literals are delimited by the double-quote character `"` (U+0022). The opening and closing `"` are consumed by the lexer and do not appear in the token stream. The `"` character is not part of the Phase 1 or Phase 2 structural character sets; it exists solely as a lexer-level delimiter.
@@ -12,7 +18,7 @@ Source files are UTF-8. Within string literal content, any valid UTF-8 byte sequ
 
 ## 3. Escape Sequences
 
-The backslash character `\` (U+005C) is the escape introducer. It is excluded from both the Phase 1 (80-char) and Phase 2 (56-char) structural character sets but is permitted inside string literal content because string content allows arbitrary UTF-8.
+The backslash character `\` (U+005C) is the escape introducer. It is excluded from both the Phase 1 (legacy profile, 86-char) and Phase 2 (default profile, 59-char) structural character sets but is permitted inside string literal content because string content allows arbitrary UTF-8.
 
 The following escape sequences are defined. No others are valid.
 
