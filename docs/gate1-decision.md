@@ -8,8 +8,7 @@
 > **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
 > April-2026 Gate 1 language, not a current description of toke. Its project-scale
 > counts are superseded — the character set is **59** (not 56 or 80), the keyword set is
-> **14**, the standard library is **57 modules** and the conformance suite is **228
-> cases** — and the grammar was never LL(1): it is **backtrack-free with bounded
+> **14**, the standard library and the conformance suite grow with the tree, so their current sizes are stated only in the fact sheet, `toke/docs/metrics-baseline.md` § Project facts — and the grammar was never LL(1): it is **backtrack-free with bounded
 > lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every
 > token-efficiency figure it carried has been deleted rather than requalified** (stories
 > 132.6 / 132.13 / 132.15): each compared a toke-trained tokenizer against cl100k_base
@@ -35,7 +34,7 @@
 > one, so the denominator is the 1,000 generated: 588/1,000 = **58.8%**. No re-run
 > was needed; the correction is arithmetic over `toke-eval/benchmark/solutions/*.toke`.
 > **58.8% is below the declared `pass_at_1_minimum: 0.60`, so the Gate 1 verdict is
-> re-opened and has not been re-decided here.** Derivation:
+> re-opened and has not been re-decided here. On 2026-09-22 the owner decided Gate 1 NOT PASSED (story 128.19).** Derivation:
 > `toke-eval/docs/suspect-numbers-128-1c.md` §1.
 
 (The criterion was also mislabelled "first-pass compile success". 58.8% is the
@@ -53,6 +52,10 @@
 is below the gate's own >= 60% threshold. Whether Gate 1 passes on the corrected
 number is the owner's decision and is **not** made here. The original decision is
 left above as the record of what was concluded at the time.
+
+**Decided 2026-09-22 (owner decision, story 128.19): Gate 1 is NOT PASSED** on
+criterion 2 (Pass@1 >= 60%); criterion 1 (token reduction) stands as met. The
+normative record is `toke/docs/decisions/gate1-decision.md`.
 
 ---
 

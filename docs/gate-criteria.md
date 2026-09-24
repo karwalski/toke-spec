@@ -5,8 +5,7 @@
 > **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
 > April-2026 gate language, not a current description of toke. Its project-scale counts
 > are superseded — the character set is **59** (not 56 or 80), the keyword set is
-> **14**, the standard library is **57 modules** and the conformance suite is **228
-> cases** — and the grammar was never LL(1): it is **backtrack-free with bounded
+> **14**, the standard library and the conformance suite grow with the tree, so their current sizes are stated only in the fact sheet, `toke/docs/metrics-baseline.md` § Project facts — and the grammar was never LL(1): it is **backtrack-free with bounded
 > lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every
 > token-efficiency figure it carried has been deleted rather than requalified** (stories
 > 132.6 / 132.13 / 132.15): each compared a toke-trained tokenizer against cl100k_base
@@ -17,7 +16,7 @@
 
 ---
 
-## Gate 1 (Run 2026-04-03 — verdict RE-OPENED 2026-09-19)
+## Gate 1 (Run 2026-04-03 — verdict RE-OPENED 2026-09-19, NOT PASSED 2026-09-22)
 
 | Criterion | Threshold | Measured | Status |
 |-----------|-----------|----------|--------|
@@ -32,11 +31,12 @@
 > one, so the denominator is the 1,000 generated: 588/1,000 = **58.8%**. No re-run
 > was needed; the correction is arithmetic over `toke-eval/benchmark/solutions/*.toke`.
 > **58.8% is below the declared `pass_at_1_minimum: 0.60`, so the Gate 1 verdict is
-> re-opened and has not been re-decided here.** Derivation:
+> re-opened and has not been re-decided here. On 2026-09-22 the owner decided Gate 1 NOT PASSED (story 128.19).** Derivation:
 > `toke-eval/docs/suspect-numbers-128-1c.md` §1.
 
 Recorded as PASS on 2026-04-03 against the withdrawn 63.7% figure. That verdict
-stands in the historical record and has not been re-decided here.
+stands in the historical record. It was re-decided on 2026-09-22: Gate 1 NOT PASSED
+(owner decision, story 128.19).
 
 *Withdrawn 2026-09-19 (stories 132.6 / 132.13 / 132.15).* The token-efficiency rows that stood here compared a toke-trained tokenizer against cl100k_base on the baseline side. Under one shared tokenizer toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19) — more, not fewer. See `toke/docs/metrics-baseline.md`. The "588/923 compiled" denominator went with it: it is not reproducible from any artefact in the workspace (story 132.16).
 
