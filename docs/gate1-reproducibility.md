@@ -15,7 +15,7 @@ This document bundles everything needed to independently reproduce the Gate 1 ev
 > one, so the denominator is the 1,000 generated: 588/1,000 = **58.8%**. No re-run
 > was needed; the correction is arithmetic over `toke-eval/benchmark/solutions/*.toke`.
 > **58.8% is below the declared `pass_at_1_minimum: 0.60`, so the Gate 1 verdict is
-> re-opened and has not been re-decided here.** Derivation:
+> re-opened and has not been re-decided here. On 2026-09-22 the owner decided Gate 1 NOT PASSED (story 128.19).** Derivation:
 > `toke-eval/docs/suspect-numbers-128-1c.md` §1.
 
 The "588/923" denominator is not merely unreproducible — it is wrong, and the

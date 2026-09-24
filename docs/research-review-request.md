@@ -196,7 +196,7 @@ BPE tokenizer trained on the Phase 1 corpus (46,730 programs). Evaluated on 4,67
 
 *Withdrawn 2026-09-19 (stories 132.6 / 132.15).* These per-language means were v0.3-era, and the "~19 tokens with the purpose-built tokenizer" line crossed the tokenizer lanes. The measured figure is the reverse of what this section claimed: under one shared tokenizer (cl100k_base) toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks (N = 60, 2026-09-19). See `toke/docs/metrics-baseline.md`.
 
-### 5.3 Gate 1 Results — verdict RE-OPENED 2026-09-19 (run 2026-04-03)
+### 5.3 Gate 1 Results — verdict RE-OPENED 2026-09-19, NOT PASSED 2026-09-22 (run 2026-04-03)
 
 | Criterion | Threshold | Result | Verdict |
 |-----------|-----------|--------|---------|
@@ -211,11 +211,12 @@ BPE tokenizer trained on the Phase 1 corpus (46,730 programs). Evaluated on 4,67
 > one, so the denominator is the 1,000 generated: 588/1,000 = **58.8%**. No re-run
 > was needed; the correction is arithmetic over `toke-eval/benchmark/solutions/*.toke`.
 > **58.8% is below the declared `pass_at_1_minimum: 0.60`, so the Gate 1 verdict is
-> re-opened and has not been re-decided here.** Derivation:
+> re-opened and has not been re-decided here. On 2026-09-22 the owner decided Gate 1 NOT PASSED (story 128.19).** Derivation:
 > `toke-eval/docs/suspect-numbers-128-1c.md` §1.
 
 Recorded as PASS on 2026-04-03 against the withdrawn 63.7% figure; that verdict
-is left in the record and has not been re-decided here.
+is left in the record. It was re-decided on 2026-09-22: Gate 1 NOT PASSED (owner
+decision, story 128.19).
 
 The token-reduction criterion row is withdrawn (story 132.6): it was scored with a toke-trained BPE against cl100k_base. The "588/923" and "92.3% compiled" denominators are withdrawn with it — neither is reproducible from any artefact in the workspace (story 132.16).
 

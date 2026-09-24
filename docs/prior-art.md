@@ -330,7 +330,7 @@ The Pass@1 denominator is a separate matter and was corrected, not deleted, on
 1,000 solutions were generated and the 77 that failed to compile were dropped
 from the denominator, making 63.7% a Pass@1 *given that the solution compiled*.
 The Pass@1 is 588/1,000 = **58.8%**, below the gate's own >= 60% threshold, and
-the Gate 1 verdict is re-opened. See `gate1-decision.md`. `toke/docs/metrics-baseline.md` is the only
+the verdict was re-opened; on 2026-09-22 the owner decided Gate 1 NOT PASSED (story 128.19). See `gate1-decision.md`. `toke/docs/metrics-baseline.md` is the only
 source for what toke has actually measured.
 
 ---
