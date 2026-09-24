@@ -8,8 +8,7 @@
 > **Archived 2026-09-19 (story 132.15).** This document is the April-2026 record of the
 > project at Gate 1 and is **not a current description of toke**. Its project-scale
 > counts are superseded — the character set is **59** (not 56), the keyword set is
-> **14** (not 12), the standard library is **57 modules** (not 14) and the conformance
-> suite is **228 cases** (not 90) — and the grammar was never LL(1): it is
+> **14** (not 12), the standard library (14 modules here) and the conformance suite (90 cases here) have since grown, and their current sizes are stated only in the fact sheet, `toke/docs/metrics-baseline.md` § Project facts — and the grammar was never LL(1): it is
 > **backtrack-free with bounded lookahead of up to 3 tokens**
 > (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every token-efficiency figure it used to
 > carry has been deleted rather than requalified** (stories 132.6 / 132.13): each

@@ -25,7 +25,7 @@
 > numbers, are in `toke/docs/metrics-baseline.md`: under one shared tokenizer (cl100k_base)
 > toke costs **1.34x [1.22, 1.48]** the tokens of equivalent Python on the 60 Gate-1 tasks
 > (N = 60, 2026-09-19) — more, not fewer. Project-scale counts (59 characters, 14 keywords,
-> 57 stdlib modules) come from the same file's "Project facts" table.
+> the standard library's module count) come from the same file's "Project facts" table.
 
 ---
 
@@ -190,7 +190,7 @@ toke's compiler-in-the-loop approach catches all of these. The two approaches ar
 
 **Mitigation:**
 - toke is a *code generation target*, not a general-purpose human programming language. The primary "developer" is an LLM, which does not need Stack Overflow.
-- The standard library (57 modules) covers the core functionality needed for the benchmark tasks (string manipulation, JSON, HTTP, file I/O, etc.).
+- The standard library (current module count: `toke/docs/metrics-baseline.md` § Project facts) covers the core functionality needed for the benchmark tasks (string manipulation, JSON, HTTP, file I/O, etc.).
 - C FFI enables calling into existing C libraries when needed.
 - The compiler emits LLVM IR, enabling integration with the LLVM ecosystem for optimisation and cross-compilation.
 

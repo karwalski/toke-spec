@@ -2,8 +2,7 @@
 > **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
 > pre-specification v0.3-era language, not a current description of toke. Its
 > project-scale counts are superseded — the character set is **59** (not 56 or 80), the
-> keyword set is **14**, the standard library is **57 modules** and the conformance
-> suite is **228 cases** — and the grammar was never LL(1): it is **backtrack-free with
+> keyword set is **14**, the standard library and the conformance suite grow with the tree, so their current sizes are stated only in the fact sheet, `toke/docs/metrics-baseline.md` § Project facts — and the grammar was never LL(1): it is **backtrack-free with
 > bounded lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). Current
 > facts live in `toke/docs/metrics-baseline.md` and `toke/docs/about/canonical.md`.
 

@@ -8,8 +8,7 @@
 > **Archived 2026-09-19 (story 132.15).** This document is a dated record of the
 > April-2026 v0.2-profile language, not a current description of toke. Its project-scale
 > counts are superseded — the character set is **59** (not 56 or 80), the keyword set is
-> **14**, the standard library is **57 modules** and the conformance suite is **228
-> cases** — and the grammar was never LL(1): it is **backtrack-free with bounded
+> **14**, the standard library and the conformance suite grow with the tree, so their current sizes are stated only in the fact sheet, `toke/docs/metrics-baseline.md` § Project facts — and the grammar was never LL(1): it is **backtrack-free with bounded
 > lookahead of up to 3 tokens** (`toke/docs/spec/toke-spec-v0.4.md` §E). **Every
 > token-efficiency figure it carried has been deleted rather than requalified** (stories
 > 132.6 / 132.13 / 132.15): each compared a toke-trained tokenizer against cl100k_base
