@@ -5,6 +5,14 @@
 **Compiler version:** tkc 0.1.0 (Default profile + Profile 1)
 **Spec version:** toke-spec-v02.md + phase2-profile.md
 
+> **Archived 2026-09-24 (story 132.88).** This document is a dated record of how
+> tkc 0.1.0 matched the v0.2 spec in April 2026, not a current description of toke.
+> Its counts are superseded: the "Standard Library (14 Modules)" below is the April
+> tree, and the standard library and the conformance suite grow with the tree, so
+> their current sizes are stated only in the fact sheet,
+> `toke/docs/metrics-baseline.md` § Project facts. The normative specification is
+> `toke/docs/spec/toke-spec-v0.4.md`.
+
 ---
 
 ## Summary
