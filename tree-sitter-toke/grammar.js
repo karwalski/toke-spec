@@ -379,7 +379,10 @@ module.exports = grammar({
     // ================================================================
 
     // lowercase only: no uppercase letters in the 59-char default alphabet (toke-spec-v0.4 §G)
-    identifier: ($) => /[a-z_][a-z0-9_]*/,
+    // 132.71: no `_` -- an identifier is [a-z][a-z0-9]* (toke-spec-v0.4 §A:
+    // `_` is normatively excluded, no-underscore rule 113.2a; v0.3 §8.1 had
+    // the same pattern). The grammar used to accept `max_size`.
+    identifier: ($) => /[a-z][a-z0-9]*/,
 
     // ================================================================
     // Statement terminator
