@@ -1,3 +1,18 @@
+> **Archived 2026-11-08 (story 132.128).** This is the v0.3-era RFC draft, kept as a dated
+> record of what was published in March–April 2026. It is not a description of toke today
+> and is not maintained: the current RFC-format document is `spec/rfc/draft-karwalski-toke-lang-00.md`
+> in the toke repository (realigned by story 132.8), and the normative specification is
+> `toke/docs/spec/toke-spec-v0.4.md`. Facts below that are superseded:
+> the grammar is **not LL(1)** — it is backtrack-free with bounded lookahead of up to 3
+> tokens (v0.4 §E); the keyword set is **14** (`m i t f let if el lp br rt as mt sc mut`,
+> v0.4 §A), not the 4 + 8 split given here; the character set is **59** (26 lowercase,
+> 10 digits, 23 symbols; story 132.14), not 56 or 80; the conformance suite grows with the
+> tree, so its size is stated only in `toke/docs/metrics-baseline.md` § Project facts, not
+> as 172; **Gate 1 was decided NOT PASSED on 2026-09-22** (story 128.19, Pass@1 58.8%
+> below its own 60% minimum), so the "Gate 1 PASS", "re-opened" and "criteria exceeded"
+> wording below is history; and every token-efficiency figure here is withdrawn (stories
+> 132.6 / 132.13 / 132.15) — the sourced numbers are in `toke/docs/metrics-baseline.md`.
+
 ```
 Toke Language Specification                                 Matthew Watt
 Document: draft-watt-toke-lang-00                            tokelang.dev

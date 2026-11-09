@@ -40,7 +40,7 @@ archive of what the language used to be, not a description of what it is.
 
 | Path | What it is |
 |------|------------|
-| `rfc/draft-watt-toke-lang-00.md` | RFC-formatted draft of the language specification (v0.3 era; realignment tracked as story 132.8) |
+| `rfc/draft-watt-toke-lang-00.md` | RFC-formatted draft of the language specification — v0.3 era, archived (story 132.128); the current RFC-format document is `spec/rfc/draft-karwalski-toke-lang-00.md` in the toke repo (story 132.8) |
 | `spec/toke-spec-v02.md` | v0.2 specification — historical |
 | `spec/phase2-profile.md` | The "phase 2" profile — historical; superseded by `toke-spec-v0.4.md` §A |
 | `spec/grammar.ebnf` | Phase-1 formal grammar — historical; the current grammar is `docs/spec/grammar.ebnf` in the toke repo |
