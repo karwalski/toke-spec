@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-03
 **Status:** PASS
-**Deciders:** M. Karwalski
+**Deciders:** Matthew Watt
 **Story:** 1.6.4
 
 > **Archived 2026-09-19 (story 132.15).** This document is a dated record of the

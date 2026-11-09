@@ -1,6 +1,6 @@
 # toke: Research Review Request
 
-**Author:** Matt Watt (karwalski)
+**Author:** Matthew Watt (karwalski)
 **Date:** April 2026
 **Status:** Post-Gate 1 — PASS — Requesting Feedback
 **Repository:** [github.com/karwalski/toke](https://github.com/karwalski/toke)
