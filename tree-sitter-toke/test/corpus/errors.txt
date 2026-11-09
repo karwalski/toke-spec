@@ -1,0 +1,164 @@
+================================================================================
+A bare = in expression position is an error (v0.3 equality)
+================================================================================
+
+m=main;
+f=g(a:i64):bool{<a=1};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (identifier))
+      (ERROR
+        (integer_literal)))))
+
+================================================================================
+An expression if without el is an error
+================================================================================
+
+m=main;
+f=g(c:bool):i64{let x=if(c){1};<x};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (ERROR
+        (identifier)
+        (identifier)
+        (block
+          (expression_statement
+            (integer_literal)))
+        (identifier)))))
+
+================================================================================
+The v0.3 mut binding form is not a statement
+================================================================================
+
+m=main;
+f=g():i64{mut x=0;<x};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (assign_statement
+        (identifier)
+        (ERROR
+          (identifier))
+        (integer_literal))
+      (return_statement
+        (identifier)))))
+
+================================================================================
+An uppercase identifier is an error (v0.4 G)
+================================================================================
+
+m=main;
+f=g():i64{let sawEof=0;<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (ERROR
+          (UNEXPECTED 'E')
+          (identifier))
+        (integer_literal))
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+A struct field cannot be assigned
+================================================================================
+
+m=main;
+f=g(p:$point):i64{p.x=9;<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_name
+          (identifier))))
+    (return_spec
+      (primitive_type))
+    (block
+      (expression_statement
+        (field_expression
+          (identifier)
+          (identifier)))
+      (ERROR
+        (integer_literal))
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+A semicolon before } in a type declaration is an error
+================================================================================
+
+m=main;
+t=$p{x:i64;};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (type_declaration
+    (type_name
+      (identifier))
+    (field
+      (identifier)
+      (primitive_type))
+    (ERROR)))

@@ -1,9 +1,9 @@
 ================================================================================
-Integer literal
+Integer literals (decimal, hex, binary)
 ================================================================================
 
 m=main;
-f=f():$i64{<42};
+f=g():i64{let a=42;let b=0xff;let c=0b1010;<a};
 
 --------------------------------------------------------------------------------
 
@@ -13,19 +13,28 @@ f=f():$i64{<42};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (integer_literal))
+      (bind_statement
+        (identifier)
+        (integer_literal))
+      (bind_statement
+        (identifier)
+        (integer_literal))
       (return_statement
-        (integer_literal)))))
+        (identifier)))))
 
 ================================================================================
 Float literal
 ================================================================================
 
 m=main;
-f=f():$f64{<3.14};
+f=g():f64{<3.14};
 
 --------------------------------------------------------------------------------
 
@@ -35,41 +44,19 @@ f=f():$f64{<3.14};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (return_statement
         (float_literal)))))
-
-================================================================================
-String literal
-================================================================================
-
-m=main;
-f=f():$str{<"hello"};
-
---------------------------------------------------------------------------------
-
-(source_file
-  (module_declaration
-    (module_path
-      (identifier)))
-  (function_declaration
-    (identifier)
-    (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
-      (return_statement
-        (string_literal)))))
 
 ================================================================================
 Boolean literals
 ================================================================================
 
 m=main;
-f=f():$bool{<true};
+f=g():bool{let t=true;<false};
 
 --------------------------------------------------------------------------------
 
@@ -79,19 +66,23 @@ f=f():$bool{<true};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (boolean_literal))
       (return_statement
         (boolean_literal)))))
 
 ================================================================================
-Binary arithmetic expressions
+Equality uses == and inequality !=
 ================================================================================
 
 m=main;
-f=f():$i64{<1+2*3};
+f=g(a:i64;b:i64):bool{<a==b};
+f=h(a:i64;b:i64):bool{<a!=b};
 
 --------------------------------------------------------------------------------
 
@@ -101,23 +92,186 @@ f=f():$i64{<1+2*3};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type)))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (return_statement
-        (additive_expression
-          (integer_literal)
-          (multiplicative_expression
-            (integer_literal)
+        (binary_expression
+          (identifier)
+          (identifier)))))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (binary_expression
+          (identifier)
+          (identifier))))))
+
+================================================================================
+Comparison operators
+================================================================================
+
+m=main;
+f=g(a:i64):bool{let p=a<1;let q=a>1;let r=a<=1;<a>=1};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (bind_statement
+        (identifier)
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (bind_statement
+        (identifier)
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (return_statement
+        (binary_expression
+          (identifier)
+          (integer_literal))))))
+
+================================================================================
+Short-circuit && and ||, || binds looser
+================================================================================
+
+m=main;
+f=g(a:bool;b:bool;c:bool):bool{<a||b&&c};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (binary_expression
+          (identifier)
+          (binary_expression
+            (identifier)
+            (identifier)))))))
+
+================================================================================
+Logical operators bind looser than equality
+================================================================================
+
+m=main;
+f=g(a:i64;b:i64):bool{<a==1&&b!=2};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (binary_expression
+          (binary_expression
+            (identifier)
+            (integer_literal))
+          (binary_expression
+            (identifier)
             (integer_literal)))))))
 
 ================================================================================
-Unary negation
+Arithmetic precedence
 ================================================================================
 
 m=main;
-f=f(x:$i64):$i64{< -x};
+f=g():i64{<1+2*3-4/2%3};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (binary_expression
+          (binary_expression
+            (integer_literal)
+            (binary_expression
+              (integer_literal)
+              (integer_literal)))
+          (binary_expression
+            (binary_expression
+              (integer_literal)
+              (integer_literal))
+            (integer_literal)))))))
+
+================================================================================
+Bitwise and shift operators
+================================================================================
+
+m=main;
+f=g(a:i64;b:i64):i64{<a<<1|b>>2^a&b};
 
 --------------------------------------------------------------------------------
 
@@ -130,22 +284,69 @@ f=f(x:$i64):$i64{< -x};
     (parameter_list
       (parameter
         (identifier)
-        (type_expression
-          (sigil_type))))
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type)))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
+      (return_statement
+        (binary_expression
+          (binary_expression
+            (identifier)
+            (integer_literal))
+          (binary_expression
+            (binary_expression
+              (identifier)
+              (integer_literal))
+            (binary_expression
+              (identifier)
+              (identifier))))))))
+
+================================================================================
+Unary negation, logical not and bitwise not
+================================================================================
+
+m=main;
+f=g(a:i64;b:bool):i64{let n=!b;let m=~a;<-a};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (unary_expression
+          (identifier)))
+      (bind_statement
+        (identifier)
+        (unary_expression
+          (identifier)))
       (return_statement
         (unary_expression
           (identifier))))))
 
 ================================================================================
-Unary logical not
+If expression (requires el)
 ================================================================================
 
 m=main;
-f=f(x:$bool):$bool{< !x};
+f=g(n:i64):i64{let sign=if(n<0){-1}el if(n>0){1}el{0};<sign};
 
 --------------------------------------------------------------------------------
 
@@ -158,22 +359,39 @@ f=f(x:$bool):$bool{< !x};
     (parameter_list
       (parameter
         (identifier)
-        (type_expression
-          (sigil_type))))
+        (primitive_type)))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (if_expression
+          (binary_expression
+            (identifier)
+            (integer_literal))
+          (block
+            (expression_statement
+              (unary_expression
+                (integer_literal))))
+          (if_expression
+            (binary_expression
+              (identifier)
+              (integer_literal))
+            (block
+              (expression_statement
+                (integer_literal)))
+            (block
+              (expression_statement
+                (integer_literal))))))
       (return_statement
-        (unary_expression
-          (identifier))))))
+        (identifier)))))
 
 ================================================================================
-Comparison expression
+If expression as a return value
 ================================================================================
 
 m=main;
-f=f(a:$i64;b:$i64):$bool{<a>b};
+f=g(c:bool):i64{<if(c){1}el{2}};
 
 --------------------------------------------------------------------------------
 
@@ -186,27 +404,65 @@ f=f(a:$i64;b:$i64):$bool{<a>b};
     (parameter_list
       (parameter
         (identifier)
-        (type_expression
-          (sigil_type)))
-      (parameter
-        (identifier)
-        (type_expression
-          (sigil_type))))
+        (primitive_type)))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (return_statement
-        (compare_expression
+        (if_expression
           (identifier)
-          (identifier))))))
+          (block
+            (expression_statement
+              (integer_literal)))
+          (block
+            (expression_statement
+              (integer_literal))))))))
+
+================================================================================
+Match expression
+================================================================================
+
+m=main;
+f=g(r:$res):i64{<mt r {$ok:v v+1;$err:e 0}};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_name
+          (identifier))))
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (match_expression
+          (identifier)
+          (match_arm
+            (type_name
+              (identifier))
+            (identifier)
+            (binary_expression
+              (identifier)
+              (integer_literal)))
+          (match_arm
+            (type_name
+              (identifier))
+            (identifier)
+            (integer_literal)))))))
 
 ================================================================================
 Function call expression
 ================================================================================
 
 m=main;
-f=f():$i64{<add(1;2)};
+f=g():i64{<add(1;2)};
 
 --------------------------------------------------------------------------------
 
@@ -216,10 +472,10 @@ f=f():$i64{<add(1;2)};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (return_statement
         (call_expression
           (identifier)
@@ -228,11 +484,11 @@ f=f():$i64{<add(1;2)};
             (integer_literal)))))))
 
 ================================================================================
-Field access expression
+Field access and method call
 ================================================================================
 
 m=main;
-f=f(p:point):$i64{<p.x};
+f=g(p:$point):i64{<p.x+s.len(p.name)};
 
 --------------------------------------------------------------------------------
 
@@ -245,23 +501,31 @@ f=f(p:point):$i64{<p.x};
     (parameter_list
       (parameter
         (identifier)
-        (type_expression
+        (type_name
           (identifier))))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (return_statement
-        (postfix_expression
-          (identifier)
-          (identifier))))))
+        (binary_expression
+          (field_expression
+            (identifier)
+            (identifier))
+          (call_expression
+            (field_expression
+              (identifier)
+              (identifier))
+            (argument_list
+              (field_expression
+                (identifier)
+                (identifier)))))))))
 
 ================================================================================
-Array indexing via get method
+Constant index a.0 and .get
 ================================================================================
 
 m=main;
-f=f(arr:@($i64)):$i64{<arr.get(0)};
+f=g(xs:@i64):i64{<xs.0+xs.get(1)};
 
 --------------------------------------------------------------------------------
 
@@ -274,18 +538,55 @@ f=f(arr:@($i64)):$i64{<arr.get(0)};
     (parameter_list
       (parameter
         (identifier)
-        (type_expression
-          (array_type
-            (type_expression
-              (sigil_type))))))
+        (array_type
+          (primitive_type))))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
+      (return_statement
+        (binary_expression
+          (index_expression
+            (identifier)
+            (integer_literal))
+          (call_expression
+            (field_expression
+              (identifier)
+              (identifier))
+            (argument_list
+              (integer_literal))))))))
+
+================================================================================
+Chained calls
+================================================================================
+
+m=main;
+f=g(s:str):str{<s.split(";").get(0)};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
       (return_statement
         (call_expression
-          (postfix_expression
-            (identifier)
+          (field_expression
+            (call_expression
+              (field_expression
+                (identifier)
+                (identifier))
+              (argument_list
+                (string_literal
+                  (string_content))))
             (identifier))
           (argument_list
             (integer_literal)))))))
@@ -295,7 +596,7 @@ Cast expression
 ================================================================================
 
 m=main;
-f=f(x:$i64):$f64{<x as $f64};
+f=g(x:i32):i64{<x as i64};
 
 --------------------------------------------------------------------------------
 
@@ -308,24 +609,21 @@ f=f(x:$i64):$f64{<x as $f64};
     (parameter_list
       (parameter
         (identifier)
-        (type_expression
-          (sigil_type))))
+        (primitive_type)))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (return_statement
         (cast_expression
           (identifier)
-          (type_expression
-            (sigil_type)))))))
+          (primitive_type))))))
 
 ================================================================================
-Array literal
+Error propagation expression
 ================================================================================
 
 m=main;
-f=f():@($i64){<@(1;2;3)};
+f=g(s:str):i64!$err{<parse(s)!$err};
 
 --------------------------------------------------------------------------------
 
@@ -335,25 +633,116 @@ f=f():@($i64){<@(1;2;3)};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
     (return_spec
-      (type_expression
-        (array_type
-          (type_expression
-            (sigil_type)))))
-    (statement_list
+      (primitive_type)
+      (type_name
+        (identifier)))
+    (block
       (return_statement
+        (propagate_expression
+          (call_expression
+            (identifier)
+            (argument_list
+              (identifier)))
+          (type_name
+            (identifier)))))))
+
+================================================================================
+Array literals, empty and typed-empty
+================================================================================
+
+m=main;
+f=g():i64{let a=@(1;2;3);let b=mut.@();let c=@($str);<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
         (array_literal
           (integer_literal)
           (integer_literal)
-          (integer_literal))))))
+          (integer_literal)))
+      (mut_bind_statement
+        (identifier)
+        (array_literal))
+      (bind_statement
+        (identifier)
+        (array_literal
+          (type_name
+            (identifier))))
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Map literals, typed-empty and nested
+================================================================================
+
+m=main;
+f=g():i64{let m=@("a":1;"b":2);let e=@($str:$i64);let n=@($str:@($i64));<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (map_literal
+          (map_entry
+            (string_literal
+              (string_content))
+            (integer_literal))
+          (map_entry
+            (string_literal
+              (string_content))
+            (integer_literal))))
+      (bind_statement
+        (identifier)
+        (map_literal
+          (map_entry
+            (type_name
+              (identifier))
+            (type_name
+              (identifier)))))
+      (bind_statement
+        (identifier)
+        (map_literal
+          (map_entry
+            (type_name
+              (identifier))
+            (array_literal
+              (type_name
+                (identifier))))))
+      (return_statement
+        (integer_literal)))))
 
 ================================================================================
 Struct literal
 ================================================================================
 
 m=main;
-t=point{x:$i64;y:$i64};
-f=f():point{<point{x:1;y:2}};
+f=g():$point{<$point{x:1;y:2}};
 
 --------------------------------------------------------------------------------
 
@@ -361,26 +750,17 @@ f=f():point{<point{x:1;y:2}};
   (module_declaration
     (module_path
       (identifier)))
-  (type_declaration
-    (identifier)
-    (field_list
-      (field
-        (identifier)
-        (type_expression
-          (sigil_type)))
-      (field
-        (identifier)
-        (type_expression
-          (sigil_type)))))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
+      (type_name
         (identifier)))
-    (statement_list
+    (block
       (return_statement
         (struct_literal
-          (identifier)
+          (type_name
+            (identifier))
           (field_init
             (identifier)
             (integer_literal))
@@ -389,11 +769,11 @@ f=f():point{<point{x:1;y:2}};
             (integer_literal)))))))
 
 ================================================================================
-Error propagation expression
+Sum value with a variant field
 ================================================================================
 
 m=main;
-f=f():$i64!$str{<parse("42")!$str};
+f=g():$res{<$res{$ok:1}};
 
 --------------------------------------------------------------------------------
 
@@ -403,27 +783,128 @@ f=f():$i64!$str{<parse("42")!$str};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type))
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (type_name
+        (identifier)))
+    (block
       (return_statement
-        (propagate_expression
-          (call_expression
+        (struct_literal
+          (type_name
+            (identifier))
+          (field_init
             (identifier)
-            (argument_list
-              (string_literal)))
-          (type_expression
-            (sigil_type)))))))
+            (integer_literal)))))))
+
+================================================================================
+Type used as a value (error raise)
+================================================================================
+
+m=main;
+f=g():i64!$err{<$err("bad")};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type)
+      (type_name
+        (identifier)))
+    (block
+      (return_statement
+        (call_expression
+          (type_name
+            (identifier))
+          (argument_list
+            (string_literal
+              (string_content))))))))
+
+================================================================================
+Function references
+================================================================================
+
+m=main;
+f=g():i64{h(&cb);h(&m.cb);<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (function_reference
+              (identifier)))))
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (function_reference
+              (identifier)
+              (identifier)))))
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Closure expression
+================================================================================
+
+m=main;
+f=g():i64{let d=fn(x:i64):i64{<x*2};<d(4)};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (closure
+          (parameter_list
+            (parameter
+              (identifier)
+              (primitive_type)))
+          (return_spec
+            (primitive_type))
+          (block
+            (return_statement
+              (binary_expression
+                (identifier)
+                (integer_literal))))))
+      (return_statement
+        (call_expression
+          (identifier)
+          (argument_list
+            (integer_literal)))))))
 
 ================================================================================
 Parenthesized expression
 ================================================================================
 
 m=main;
-f=f():$i64{<(1+2)*3};
+f=g():i64{<(1+2)*3};
 
 --------------------------------------------------------------------------------
 
@@ -433,13 +914,14 @@ f=f():$i64{<(1+2)*3};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (return_statement
-        (multiplicative_expression
-          (additive_expression
-            (integer_literal)
-            (integer_literal))
+        (binary_expression
+          (parenthesized_expression
+            (binary_expression
+              (integer_literal)
+              (integer_literal)))
           (integer_literal))))))
