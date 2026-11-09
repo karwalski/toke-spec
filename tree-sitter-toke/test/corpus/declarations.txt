@@ -45,11 +45,68 @@ i=io:std.io;
       (identifier))))
 
 ================================================================================
+Import declaration with a version string
+================================================================================
+
+m=main;
+i=http:std.http "1.2";
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (import_declaration
+    (identifier)
+    (module_path
+      (identifier)
+      (identifier))
+    (string_literal
+      (string_content))))
+
+================================================================================
+Import alias that is also a scalar type name
+================================================================================
+
+m=main;
+i=str:std.str;
+f=n(s:str):i64{<str.len(s)};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (import_declaration
+    (identifier)
+    (module_path
+      (identifier)
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (call_expression
+          (field_expression
+            (identifier)
+            (identifier))
+          (argument_list
+            (identifier)))))))
+
+================================================================================
 Type declaration (struct)
 ================================================================================
 
 m=main;
-t=point{x:$i64;y:$i64};
+t=$point{x:i64;y:i64};
 
 --------------------------------------------------------------------------------
 
@@ -58,23 +115,21 @@ t=point{x:$i64;y:$i64};
     (module_path
       (identifier)))
   (type_declaration
-    (identifier)
-    (field_list
-      (field
-        (identifier)
-        (type_expression
-          (sigil_type)))
-      (field
-        (identifier)
-        (type_expression
-          (sigil_type))))))
+    (type_name
+      (identifier))
+    (field
+      (identifier)
+      (primitive_type))
+    (field
+      (identifier)
+      (primitive_type))))
 
 ================================================================================
-Function declaration with body
+Type declaration (sum type with variants)
 ================================================================================
 
 m=main;
-f=add(a:$i64;b:$i64):$i64{<a+b};
+t=$res{$ok:i64;$err:$str};
 
 --------------------------------------------------------------------------------
 
@@ -82,32 +137,23 @@ f=add(a:$i64;b:$i64):$i64{<a+b};
   (module_declaration
     (module_path
       (identifier)))
-  (function_declaration
-    (identifier)
-    (parameter_list
-      (parameter
-        (identifier)
-        (type_expression
-          (sigil_type)))
-      (parameter
-        (identifier)
-        (type_expression
-          (sigil_type))))
-    (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
-      (return_statement
-        (additive_expression
-          (identifier)
-          (identifier))))))
+  (type_declaration
+    (type_name
+      (identifier))
+    (variant
+      (identifier)
+      (primitive_type))
+    (variant
+      (identifier)
+      (type_name
+        (identifier)))))
 
 ================================================================================
-Function declaration without body (extern)
+Type declaration with array, map, function, qualified and pointer field types
 ================================================================================
 
 m=main;
-f=puts(s:$str):$i64;
+t=$box{xs:@i64;ys:@(str);m:@(str:@i64);cb:(i64;i64):bool;c:db.$conn;p:*u8};
 
 --------------------------------------------------------------------------------
 
@@ -115,23 +161,51 @@ f=puts(s:$str):$i64;
   (module_declaration
     (module_path
       (identifier)))
-  (function_declaration
-    (identifier)
-    (parameter_list
-      (parameter
+  (type_declaration
+    (type_name
+      (identifier))
+    (field
+      (identifier)
+      (array_type
+        (primitive_type)))
+    (field
+      (identifier)
+      (array_type
+        (primitive_type)))
+    (field
+      (identifier)
+      (map_type
+        (primitive_type)
+        (array_type
+          (primitive_type))))
+    (field
+      (identifier)
+      (function_type
+        (primitive_type)
+        (primitive_type)
+        (primitive_type)))
+    (field
+      (identifier)
+      (qualified_type
         (identifier)
-        (type_expression
-          (sigil_type))))
-    (return_spec
-      (type_expression
-        (sigil_type)))))
+        (type_name
+          (identifier))))
+    (field
+      (identifier)
+      (pointer_type
+        (primitive_type)))))
 
 ================================================================================
-Constant declaration
+Constant declarations (module constants)
 ================================================================================
 
 m=main;
-maxsize=1024:$i64;
+max=1024:i64;
+name="toke":str;
+pi=3.14:f64;
+on=true:bool;
+mask=0xff:u8;
+bits=0b101:u8;
 
 --------------------------------------------------------------------------------
 
@@ -142,15 +216,242 @@ maxsize=1024:$i64;
   (const_declaration
     (identifier)
     (integer_literal)
-    (type_expression
-      (sigil_type))))
+    (primitive_type))
+  (const_declaration
+    (identifier)
+    (string_literal
+      (string_content))
+    (primitive_type))
+  (const_declaration
+    (identifier)
+    (float_literal)
+    (primitive_type))
+  (const_declaration
+    (identifier)
+    (boolean_literal)
+    (primitive_type))
+  (const_declaration
+    (identifier)
+    (integer_literal)
+    (primitive_type))
+  (const_declaration
+    (identifier)
+    (integer_literal)
+    (primitive_type)))
+
+================================================================================
+Module-level let globals
+================================================================================
+
+m=main;
+let count=mut.0;
+let limit=10;
+let total:i64=mut.0;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (global_declaration
+    (mut_bind_statement
+      (identifier)
+      (integer_literal)))
+  (global_declaration
+    (bind_statement
+      (identifier)
+      (integer_literal)))
+  (global_declaration
+    (mut_bind_statement
+      (identifier)
+      (primitive_type)
+      (integer_literal))))
+
+================================================================================
+Declarations in the fixed order
+================================================================================
+
+m=main;
+i=io:std.io;
+t=$p{x:i64};
+max=3:i64;
+let g=mut.0;
+f=main():i64{<max};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (import_declaration
+    (identifier)
+    (module_path
+      (identifier)
+      (identifier)))
+  (type_declaration
+    (type_name
+      (identifier))
+    (field
+      (identifier)
+      (primitive_type)))
+  (const_declaration
+    (identifier)
+    (integer_literal)
+    (primitive_type))
+  (global_declaration
+    (mut_bind_statement
+      (identifier)
+      (integer_literal)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (identifier)))))
+
+================================================================================
+Function declaration with body
+================================================================================
+
+m=main;
+f=add(a:i64;b:i64):i64{<a+b};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (binary_expression
+          (identifier)
+          (identifier))))))
+
+================================================================================
+Function declaration with sigil return type
+================================================================================
+
+m=main;
+f=main():$i64{<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (type_name
+        (identifier)))
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Function declaration without body (extern)
+================================================================================
+
+m=main;
+f=ext(x:i64):void;
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))))
+
+================================================================================
+Last function declaration may omit its semicolon
+================================================================================
+
+m=main;
+f=a():i64{<1};
+f=b():i64{<2}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (integer_literal))))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Function with error return type
+================================================================================
+
+m=main;
+f=parse(s:str):i64!$err{<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type)
+      (type_name
+        (identifier)))
+    (block
+      (return_statement
+        (integer_literal)))))
 
 ================================================================================
 Identifier with an underscore is not an identifier (132.71)
 ================================================================================
 
 m=main;
-max_size=1024:$i64;
+max_size=1024:i64;
 
 --------------------------------------------------------------------------------
 
@@ -164,15 +465,14 @@ max_size=1024:$i64;
   (const_declaration
     (identifier)
     (integer_literal)
-    (type_expression
-      (sigil_type))))
+    (primitive_type)))
 
 ================================================================================
-Function with error return type
+Keywords m, t, i and f are usable as names inside a body
 ================================================================================
 
 m=main;
-f=parse(s:$str):$i64!$str{<0};
+f=main():i64{let i=1;let f=2;let t=3;let m=i+f+t;<m};
 
 --------------------------------------------------------------------------------
 
@@ -182,16 +482,25 @@ f=parse(s:$str):$i64!$str{<0};
       (identifier)))
   (function_declaration
     (identifier)
-    (parameter_list
-      (parameter
-        (identifier)
-        (type_expression
-          (sigil_type))))
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type))
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (integer_literal))
+      (bind_statement
+        (identifier)
+        (integer_literal))
+      (bind_statement
+        (identifier)
+        (integer_literal))
+      (bind_statement
+        (identifier)
+        (binary_expression
+          (binary_expression
+            (identifier)
+            (identifier))
+          (identifier)))
       (return_statement
-        (integer_literal)))))
+        (identifier)))))

@@ -49,7 +49,7 @@ archive of what the language used to be, not a description of what it is.
 | `docs/temspec.md` | **TEMSpec** — the token-efficiency measurement specification. Normative and current: §6.3 defines the four reporting fields (metric type, tokenizer, baseline, N) that every published toke number must carry |
 | `docs/` (rest) | Design decisions, prior art, gate criteria, review packages |
 | `examples/` | Example programs in the phase-1 and phase-2 profiles — historical syntax |
-| `tree-sitter-toke/` | Tree-sitter grammar; targets v0.3, v0.4 pass pending |
+| `tree-sitter-toke/` | Tree-sitter grammar for v0.4 (default profile, all 14 keywords); see its README for what it covers (story 132.124) |
 
 ## Corrections that apply to every document in this archive
 

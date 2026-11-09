@@ -1,7 +1,11 @@
-; Syntax highlighting queries for Toke (v0.3)
+; Syntax highlighting queries for toke (v0.4)
 ; For use with Tree-sitter compatible editors (Neovim, Helix, Zed, etc.)
 
-; -- Keywords ------------------------------------------------------------------
+; -- Comments ------------------------------------------------------------------
+
+(comment) @comment
+
+; -- Keywords (14, toke-spec-v0.4 §A) -----------------------------------------
 
 ["m" "f" "t" "i"] @keyword
 
@@ -9,21 +13,31 @@
 
 ["if" "el"] @keyword.conditional
 
-["lp" "br"] @keyword.repeat
+["lp"] @keyword.repeat
+
+(break_statement) @keyword.repeat
 
 ["mt"] @keyword
+
+["sc" "spawn" "arena"] @keyword
+
+["fn"] @keyword.function
 
 ["as"] @keyword.operator
 
 ["rt"] @keyword.return
 
-"<" @keyword.return
+(return_statement "<" @keyword.return)
 
 ; -- Operators -----------------------------------------------------------------
 
-["+" "-" "*" "/" "%" "!"] @operator
+(binary_expression operator: _ @operator)
+(unary_expression operator: _ @operator)
+(propagate_expression "!" @operator)
+(return_spec "!" @operator)
 
-["=" "<" ">"] @operator
+"=" @operator
+"&" @operator
 
 ; -- Punctuation ---------------------------------------------------------------
 
@@ -35,19 +49,24 @@
 ["."] @punctuation.delimiter
 
 "@" @punctuation.special
+"$" @punctuation.special
 
 ; -- Literals ------------------------------------------------------------------
 
 (integer_literal) @number
 (float_literal) @number.float
 (string_literal) @string
+(escape_sequence) @string.escape
+(interpolation
+  "\\(" @punctuation.special
+  ")" @punctuation.special)
 (boolean_literal) @boolean
 
 ; -- Types ---------------------------------------------------------------------
 
-(sigil_type) @type.builtin
-
-(array_type) @type
+(primitive_type) @type.builtin
+(type_name) @type
+(qualified_type module: (identifier) @module)
 
 ; -- Declarations --------------------------------------------------------------
 
@@ -55,59 +74,59 @@
   (module_path
     (identifier) @module))
 
-(function_declaration
-  "f" @keyword
-  "=" @operator
-  (identifier) @function)
-
-(type_declaration
-  "t" @keyword
-  "=" @operator
-  (identifier) @type.definition)
+(import_declaration
+  alias: (identifier) @module)
 
 (import_declaration
-  "i" @keyword
-  "=" @operator
-  (identifier) @namespace)
+  path: (module_path (identifier) @module))
+
+(function_declaration
+  name: (identifier) @function)
+
+(type_declaration
+  name: (identifier) @type.definition)
 
 (const_declaration
-  (identifier) @constant)
+  name: (identifier) @constant)
 
 ; -- Parameters and fields -----------------------------------------------------
 
 (parameter
-  (identifier) @variable.parameter)
+  name: (identifier) @variable.parameter)
 
 (field
-  (identifier) @property)
+  name: (identifier) @property)
+
+(variant
+  name: (identifier) @constructor)
 
 (field_init
-  (identifier) @property)
+  name: (identifier) @property)
 
 ; -- Expressions ---------------------------------------------------------------
 
 (call_expression
-  (postfix_expression
-    (identifier) @function.call))
+  function: (identifier) @function.call)
 
-(postfix_expression
-  "." (identifier) @property)
+(call_expression
+  function: (field_expression
+    field: (identifier) @function.method.call))
+
+(field_expression
+  field: (identifier) @property)
+
+(function_reference
+  name: (identifier) @function)
 
 (bind_statement
-  "let" @keyword
-  (identifier) @variable)
+  name: (identifier) @variable)
 
 (mut_bind_statement
-  "mut" @keyword
-  (identifier) @variable)
-
-(assign_statement
-  (identifier) @variable)
-
-(identifier) @variable
+  name: (identifier) @variable)
 
 ; -- Match ---------------------------------------------------------------------
 
 (match_arm
-  (identifier) @type
-  (identifier) @variable)
+  binding: (identifier) @variable)
+
+(identifier) @variable

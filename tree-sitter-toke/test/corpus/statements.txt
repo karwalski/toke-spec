@@ -3,7 +3,7 @@ Let binding
 ================================================================================
 
 m=main;
-f=f():$i64{let x=42;<x};
+f=g():i64{let x=42;<x};
 
 --------------------------------------------------------------------------------
 
@@ -13,10 +13,10 @@ f=f():$i64{let x=42;<x};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (bind_statement
         (identifier)
         (integer_literal))
@@ -24,11 +24,11 @@ f=f():$i64{let x=42;<x};
         (identifier)))))
 
 ================================================================================
-Mutable binding
+Let binding with a type annotation
 ================================================================================
 
 m=main;
-f=f():$i64{mut x=0;<x};
+f=g():i64{let x:i64=42;<x};
 
 --------------------------------------------------------------------------------
 
@@ -38,22 +38,23 @@ f=f():$i64{mut x=0;<x};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
-      (mut_bind_statement
+      (primitive_type))
+    (block
+      (bind_statement
         (identifier)
+        (primitive_type)
         (integer_literal))
       (return_statement
         (identifier)))))
 
 ================================================================================
-Assignment statement
+Mutable binding (let x=mut.e)
 ================================================================================
 
 m=main;
-f=f():$i64{mut x=0;x=42;<x};
+f=g():i64{let x=mut.0;x=42;<x};
 
 --------------------------------------------------------------------------------
 
@@ -63,10 +64,10 @@ f=f():$i64{mut x=0;x=42;<x};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (mut_bind_statement
         (identifier)
         (integer_literal))
@@ -77,11 +78,116 @@ f=f():$i64{mut x=0;x=42;<x};
         (identifier)))))
 
 ================================================================================
+Assignment statement uses =
+================================================================================
+
+m=main;
+f=g():i64{let x=mut.0;x=x+1;<x};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (mut_bind_statement
+        (identifier)
+        (integer_literal))
+      (assign_statement
+        (identifier)
+        (binary_expression
+          (identifier)
+          (integer_literal)))
+      (return_statement
+        (identifier)))))
+
+================================================================================
+Return with rt, and a bare return
+================================================================================
+
+m=main;
+f=g():i64{rt 1};
+f=h():void{<};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (integer_literal))))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement))))
+
+================================================================================
+Trailing semicolon before } is optional
+================================================================================
+
+m=main;
+f=g():i64{let x=1;<x;};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (bind_statement
+        (identifier)
+        (integer_literal))
+      (return_statement
+        (identifier)))))
+
+================================================================================
+Empty block
+================================================================================
+
+m=main;
+f=g():void{};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block)))
+
+================================================================================
 If statement
 ================================================================================
 
 m=main;
-f=f(x:$i64):$i64{if(x>0){<x}};
+f=g(x:i64):i64{if(x>0){<x};<0};
 
 --------------------------------------------------------------------------------
 
@@ -94,26 +200,26 @@ f=f(x:$i64):$i64{if(x>0){<x}};
     (parameter_list
       (parameter
         (identifier)
-        (type_expression
-          (sigil_type))))
+        (primitive_type)))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (if_statement
-        (compare_expression
+        (binary_expression
           (identifier)
           (integer_literal))
-        (statement_list
+        (block
           (return_statement
-            (identifier)))))))
+            (identifier))))
+      (return_statement
+        (integer_literal)))))
 
 ================================================================================
 If-else statement
 ================================================================================
 
 m=main;
-f=f(x:$i64):$i64{if(x>0){<x}el{<0}};
+f=g(x:i64):i64{if(x>0){<x}el{<0}};
 
 --------------------------------------------------------------------------------
 
@@ -126,30 +232,27 @@ f=f(x:$i64):$i64{if(x>0){<x}el{<0}};
     (parameter_list
       (parameter
         (identifier)
-        (type_expression
-          (sigil_type))))
+        (primitive_type)))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (if_statement
-        (compare_expression
+        (binary_expression
           (identifier)
           (integer_literal))
-        (statement_list
+        (block
           (return_statement
             (identifier)))
-        (else_clause
-          (statement_list
-            (return_statement
-              (integer_literal))))))))
+        (block
+          (return_statement
+            (integer_literal)))))))
 
 ================================================================================
-Loop statement
+If statement chained with el if
 ================================================================================
 
 m=main;
-f=f():$i64{mut sum=0;lp(let i=0;i<10;i=i+1){sum=sum+i};<sum};
+f=g(x:i64):i64{if(x<0){<0}el if(x==0){<1}el{<2}};
 
 --------------------------------------------------------------------------------
 
@@ -159,10 +262,82 @@ f=f():$i64{mut sum=0;lp(let i=0;i<10;i=i+1){sum=sum+i};<sum};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
+      (if_statement
+        (binary_expression
+          (identifier)
+          (integer_literal))
+        (block
+          (return_statement
+            (integer_literal)))
+        (if_statement
+          (binary_expression
+            (identifier)
+            (integer_literal))
+          (block
+            (return_statement
+              (integer_literal)))
+          (block
+            (return_statement
+              (integer_literal))))))))
+
+================================================================================
+If statement followed by a statement without a semicolon
+================================================================================
+
+m=main;
+f=g(x:i64):i64{if(x>0){<x} <0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (if_statement
+        (binary_expression
+          (identifier)
+          (integer_literal))
+        (block
+          (return_statement
+            (identifier))))
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Three-clause loop
+================================================================================
+
+m=main;
+f=g():i64{let s=mut.0;lp(let i=0;i<10;i=i+1){s=s+i};<s};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
       (mut_bind_statement
         (identifier)
         (integer_literal))
@@ -170,29 +345,29 @@ f=f():$i64{mut sum=0;lp(let i=0;i<10;i=i+1){sum=sum+i};<sum};
         (loop_init
           (identifier)
           (integer_literal))
-        (compare_expression
+        (binary_expression
           (identifier)
           (integer_literal))
         (loop_step
           (identifier)
-          (additive_expression
+          (binary_expression
             (identifier)
             (integer_literal)))
-        (statement_list
+        (block
           (assign_statement
             (identifier)
-            (additive_expression
+            (binary_expression
               (identifier)
               (identifier)))))
       (return_statement
         (identifier)))))
 
 ================================================================================
-Infinite loop
+Three-clause loop without let
 ================================================================================
 
 m=main;
-f=f():$void{lp{br}};
+f=g():i64{let i=mut.0;lp(i=0;i<10;i=i+1){br};<i};
 
 --------------------------------------------------------------------------------
 
@@ -202,20 +377,69 @@ f=f():$void{lp{br}};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
+      (mut_bind_statement
+        (identifier)
+        (integer_literal))
       (loop_statement
-        (statement_list
-          (break_statement))))))
+        (loop_init
+          (identifier)
+          (integer_literal))
+        (binary_expression
+          (identifier)
+          (integer_literal))
+        (loop_step
+          (identifier)
+          (binary_expression
+            (identifier)
+            (integer_literal)))
+        (block
+          (break_statement)))
+      (return_statement
+        (identifier)))))
+
+================================================================================
+While-form loop with == guard
+================================================================================
+
+m=main;
+f=g():i64{let go=mut.1;lp(go==1){go=0};<go};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (mut_bind_statement
+        (identifier)
+        (integer_literal))
+      (loop_statement
+        (binary_expression
+          (identifier)
+          (integer_literal))
+        (block
+          (assign_statement
+            (identifier)
+            (integer_literal))))
+      (return_statement
+        (identifier)))))
 
 ================================================================================
 Break statement
 ================================================================================
 
 m=main;
-f=f():$void{lp(let i=0;i<10;i=i+1){br}};
+f=g():i64{lp(true){br};<0};
 
 --------------------------------------------------------------------------------
 
@@ -225,76 +449,23 @@ f=f():$void{lp(let i=0;i<10;i=i+1){br}};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (loop_statement
-        (loop_init
-          (identifier)
-          (integer_literal))
-        (compare_expression
-          (identifier)
-          (integer_literal))
-        (loop_step
-          (identifier)
-          (additive_expression
-            (identifier)
-            (integer_literal)))
-        (statement_list
-          (break_statement))))))
-
-================================================================================
-Match expression
-================================================================================
-
-m=main;
-f=f(x:shape):$i64{<mt x{circle:c c.radius;rect:r r.w*r.h}};
-
---------------------------------------------------------------------------------
-
-(source_file
-  (module_declaration
-    (module_path
-      (identifier)))
-  (function_declaration
-    (identifier)
-    (parameter_list
-      (parameter
-        (identifier)
-        (type_expression
-          (identifier))))
-    (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+        (boolean_literal)
+        (block
+          (break_statement)))
       (return_statement
-        (match_expression
-          (identifier)
-          (match_arm_list
-            (match_arm
-              (identifier)
-              (identifier)
-              (postfix_expression
-                (identifier)
-                (identifier)))
-            (match_arm
-              (identifier)
-              (identifier)
-              (multiplicative_expression
-                (postfix_expression
-                  (identifier)
-                  (identifier))
-                (postfix_expression
-                  (identifier)
-                  (identifier))))))))))
+        (integer_literal)))))
 
 ================================================================================
-Return with rt keyword
+Scope statement (sc) with spawn
 ================================================================================
 
 m=main;
-f=f():$i64{rt 42};
+f=g():i64{sc{let a=spawn work(1);let b=spawn work(2)};<0};
 
 --------------------------------------------------------------------------------
 
@@ -304,10 +475,57 @@ f=f():$i64{rt 42};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list)
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
+      (scope_statement
+        (block
+          (bind_statement
+            (identifier)
+            (spawn_expression
+              (call_expression
+                (identifier)
+                (argument_list
+                  (integer_literal)))))
+          (bind_statement
+            (identifier)
+            (spawn_expression
+              (call_expression
+                (identifier)
+                (argument_list
+                  (integer_literal)))))))
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Arena statement
+================================================================================
+
+m=main;
+f=g():i64{{arena let b=1;run(b)}<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (arena_statement
+        (bind_statement
+          (identifier)
+          (integer_literal))
+        (expression_statement
+          (call_expression
+            (identifier)
+            (argument_list
+              (identifier)))))
       (return_statement
         (integer_literal)))))
 
@@ -316,7 +534,43 @@ Expression statement (function call)
 ================================================================================
 
 m=main;
-f=f():$void{puts("hello")};
+i=io:std.io;
+f=g():i64{io.println("hi");<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (import_declaration
+    (identifier)
+    (module_path
+      (identifier)
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (expression_statement
+        (call_expression
+          (field_expression
+            (identifier)
+            (identifier))
+          (argument_list
+            (string_literal
+              (string_content)))))
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Match statement with early-return arms
+================================================================================
+
+m=main;
+f=g(r:$res):i64{mt r {$ok:v <v;$err:e <0};<1};
 
 --------------------------------------------------------------------------------
 
@@ -326,12 +580,28 @@ f=f():$void{puts("hello")};
       (identifier)))
   (function_declaration
     (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (type_name
+          (identifier))))
     (return_spec
-      (type_expression
-        (sigil_type)))
-    (statement_list
+      (primitive_type))
+    (block
       (expression_statement
-        (call_expression
+        (match_expression
           (identifier)
-          (argument_list
-            (string_literal)))))))
+          (match_arm
+            (type_name
+              (identifier))
+            (identifier)
+            (return_statement
+              (identifier)))
+          (match_arm
+            (type_name
+              (identifier))
+            (identifier)
+            (return_statement
+              (integer_literal)))))
+      (return_statement
+        (integer_literal)))))

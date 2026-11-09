@@ -1,0 +1,233 @@
+================================================================================
+Comment
+================================================================================
+
+m=main;
+(* a comment *)
+f=g():i64{<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (comment)
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Nested comment (v0.4 H)
+================================================================================
+
+m=main;
+(* outer (* inner *) still outer *)
+f=g():i64{<0};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (comment)
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (integer_literal)))))
+
+================================================================================
+Comment inside a body and spanning lines
+================================================================================
+
+m=main;
+f=g():i64{
+  (* line one
+     line two *)
+  <0 (* tail *)
+};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (comment)
+      (return_statement
+        (integer_literal))
+      (comment))))
+
+================================================================================
+String literal
+================================================================================
+
+m=main;
+f=g():str{<"hello"};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (string_literal
+          (string_content))))))
+
+================================================================================
+Empty string
+================================================================================
+
+m=main;
+f=g():str{<""};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (string_literal)))))
+
+================================================================================
+String escapes
+================================================================================
+
+m=main;
+f=g():str{<"a\"b\\c\n\x1b"};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (string_literal
+          (string_content)
+          (escape_sequence)
+          (string_content)
+          (escape_sequence)
+          (string_content)
+          (escape_sequence)
+          (escape_sequence))))))
+
+================================================================================
+Comment markers inside a string are text
+================================================================================
+
+m=main;
+f=g():str{<" (* not a comment *) "};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (string_literal
+          (string_content))))))
+
+================================================================================
+String interpolation
+================================================================================
+
+m=main;
+f=g(n:i64):str{<"n=\(n) len=\(s.len("ab"))"};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (string_literal
+          (string_content)
+          (interpolation
+            (identifier))
+          (string_content)
+          (interpolation
+            (call_expression
+              (field_expression
+                (identifier)
+                (identifier))
+              (argument_list
+                (string_literal
+                  (string_content))))))))))
+
+================================================================================
+Multi-line string
+================================================================================
+
+m=main;
+f=g():str{<"line one
+line two"};
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (module_declaration
+    (module_path
+      (identifier)))
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_spec
+      (primitive_type))
+    (block
+      (return_statement
+        (string_literal
+          (string_content))))))
