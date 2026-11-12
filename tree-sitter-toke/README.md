@@ -1,6 +1,6 @@
 # tree-sitter-toke
 
-Tree-sitter grammar for the [Toke](https://github.com/karwalski/toke-spec) programming language.
+Tree-sitter grammar for the [toke](https://github.com/karwalski/toke) programming language.
 
 ## Status
 
@@ -34,7 +34,7 @@ recovery paths:
 - `//` and `#` line comments, which the compiler skips only as error recovery (W1020);
 - the legacy profile (`--legacy`).
 
-## Building## Building
+## Building
 
 Requires [tree-sitter CLI](https://tree-sitter.github.io/tree-sitter/creating-parsers#installation):
 
@@ -64,4 +64,4 @@ Copy `queries/highlights.scm` to your editor's queries directory for syntax high
 
 ## File extension
 
-Toke source files use the `.tk` extension.
+toke source files use the `.tk` extension.
