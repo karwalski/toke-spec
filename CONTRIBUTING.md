@@ -1,8 +1,15 @@
 # Contributing to toke-spec
 
-## How specification changes work
+## Where specification changes go
 
-The toke specification uses a structured amendment process.
+This repository is an archive by charter. The normative specification —
+`docs/spec/toke-spec-v0.4.md`, the grammars `docs/spec/grammar.ebnf` and
+`docs/spec/toke.gbnf`, the error registry `docs/spec/errors.md` and the standard
+library signatures `docs/spec/stdlib-signatures.md` — lives in the
+[toke](https://github.com/karwalski/toke) repository, beside the compiler that
+implements it. Propose normative changes there, not here.
+
+The toke specification uses a structured amendment process:
 
 **For clarifications** (wording, examples, non-normative sections):
 - Open an issue using the Clarification template
@@ -21,14 +28,16 @@ stdlib signatures):
 - Every new code requires a prose description, an example, and
   a fix field specification if a mechanical fix is possible
 
-## Pull request requirements
+## What changes here
 
-- Changes to `spec/grammar.ebnf` must include a parser generator
-  validation showing zero ambiguity warnings
-- Changes to `spec/errors.md` must include at least one example
-  program that triggers the new or changed diagnostic
-- Changes to `spec/stdlib-signatures.md` must be reflected in
-  toke-stdlib and toke-benchmark in the same release
+- **The archived documents** (`spec/`, `rfc/`, `examples/`, most of `docs/`) are a
+  dated record. Correct a factual error in a banner; do not bring a superseded
+  document up to date in place.
+- **`docs/temspec.md`** is normative and current; a change to it follows the
+  amendment process above.
+- **`tree-sitter-toke/`** tracks the v0.4 grammar in the toke repository. A change
+  must keep `npx tree-sitter generate --no-bindings` free of conflicts and
+  `npx tree-sitter test` passing (see `tree-sitter-toke/README.md`).
 
 ## Developer Certificate of Origin
 

@@ -44,12 +44,13 @@ archive of what the language used to be, not a description of what it is.
 | `spec/toke-spec-v02.md` | v0.2 specification — historical |
 | `spec/phase2-profile.md` | The "phase 2" profile — historical; superseded by `toke-spec-v0.4.md` §A |
 | `spec/grammar.ebnf` | Phase-1 formal grammar — historical; the current grammar is `docs/spec/grammar.ebnf` in the toke repo |
-| `spec/semantics.md` | Type rules and memory model |
-| `spec/errors.md` | Error code registry |
+| `spec/semantics.md` | Static-semantics stub for profile 1 (v0.1) — historical; the current rules are `docs/spec/toke-spec-v0.4.md` in the toke repo |
+| `spec/errors.md` | Error code registry — archived (story 132.15); the live registry is `docs/spec/errors.md` in the toke repo |
+| `spec/stdlib-signatures.md` | Standard library signatures — archived (story 132.15); the normative signatures are `docs/spec/stdlib-signatures.md` in the toke repo |
 | `docs/temspec.md` | **TEMSpec** — the token-efficiency measurement specification. Normative and current: §6.3 defines the four reporting fields (metric type, tokenizer, baseline, N) that every published toke number must carry |
 | `docs/` (rest) | Design decisions, prior art, gate criteria, review packages |
 | `examples/` | Example programs in the phase-1 and phase-2 profiles — historical syntax |
-| `tree-sitter-toke/` | Tree-sitter grammar for v0.4 (default profile, all 14 keywords); see its README for what it covers (story 132.124) |
+| `tree-sitter-toke/` | Tree-sitter grammar for v0.4 (default profile, all 14 keywords), synced to `toke-spec-v0.4.md` by story 132.124; see its README for what it covers |
 
 ## Corrections that apply to every document in this archive
 
